@@ -1,0 +1,2889 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>必携英単語LEAP</title>
+    <style>
+        /* グローバルリセット */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* 全体の背景とフォント */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* ★★★★★デザイン変更: 青・緑のグラデーション★★★★★ */
+            background: linear-gradient(135deg, #81D4FA 0%, #4CAF50 100%); /* 明るい青から緑へ */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* コンテナのスタイル */
+        .container {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        /* ヘッダーのスタイル */
+        .header {
+            /* ★★★★★デザイン変更: 青・緑のグラデーション★★★★★ */
+            background: linear-gradient(135deg, #2196F3 0%, #4CAF50 100%); /* 鮮やかな青から緑へ */
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        /* プログレスバーのスタイル */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50; /* 進捗の緑 */
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        /* 画面共通スタイル */
+        .screen {
+            display: none;
+            padding: 30px;
+            min-height: 500px;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        /* CSV入力エリアのスタイル（非表示） */
+        .csv-input-area {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none; /* CSV入力UIを非表示にするため */
+        }
+        
+        .csv-input-area h3 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .csv-input-area textarea {
+            width: 100%;
+            height: 150px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .csv-sample {
+            background: #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            text-align: left;
+        }
+        
+        /* フォームグループのスタイル */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        /* フォーカス時のボーダー色 */
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            /* ★★★★★デザイン変更★★★★★ */
+            border-color: #2196F3; /* フォーカス時のボーダー色を青に */
+        }
+        
+        /* 範囲入力のレイアウト */
+        .range-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .range-inputs input {
+            flex: 1;
+        }
+        
+        .range-inputs span {
+            font-weight: bold;
+            color: #666;
+        }
+        
+        /* ボタンの共通スタイル */
+        .btn {
+            /* ★★★★★デザイン変更: 青・緑のグラデーション★★★★★ */
+            background: linear-gradient(135deg, #2196F3 0%, #4CAF50 100%); /* 鮮やかな青から緑へ */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-large {
+            padding: 20px 40px;
+            font-size: 18px;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        /* 成功系ボタン */
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        /* 危険系ボタン */
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
+        }
+        
+        /* セカンダリボタン */
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+        
+        /* 単語表示エリア */
+        .word-display {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .word-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .word-text {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        /* 音声再生ボタン */
+        .audio-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .audio-btn:hover {
+            background: #ff5252;
+            transform: scale(1.1);
+        }
+        
+        /* 回答表示エリア */
+        .answer-display {
+            background: #e8f5e8;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+            display: none;
+        }
+        
+        .answer-display.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* テストコントロール */
+        .test-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        /* 結果概要 */
+        .result-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        /* 結果項目 */
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background: white;
+            border-left: 5px solid #ddd;
+        }
+        
+        .result-item.correct {
+            border-left-color: #4CAF50;
+            background: #f1f8e9;
+        }
+        
+        .result-item.incorrect {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        
+        /* 結果コントロール */
+        .result-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        /* シードセクション */
+        .seed-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .seed-section h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .seed-input {
+            font-family: monospace;
+            font-size: 12px;
+            height: 60px;
+        }
+        
+        /* メッセージ表示 */
+        .error-message {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .success-message {
+            color: #2e7d32;
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>必携英単語LEAP</h1>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div id="progressText">待機中</div>
+        </div>
+        
+        <!-- CSV入力・設定画面 -->
+        <div class="screen active" id="setupScreen">
+            <div class="csv-input-area">
+                <!-- CSVデータ入力用のUIは削除しました -->
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            
+            <div class="form-group">
+                <label>範囲設定</label>
+                <div class="range-inputs">
+                    <input type="number" id="rangeStart" value="1" min="1">
+                    <span>番 ～</span>
+                    <input type="number" id="rangeEnd" value="4" min="1">
+                    <span>番</span>
+                </div>
+            </div>
+            
+            <!-- ★★★★★ここから変更★★★★★ -->
+            <!-- 問題数を出題順の上に移動しました -->
+            <div class="form-group">
+                <label>問題数</label>
+                <select id="questionCount">
+                    <option value="10">10問</option>
+                    <option value="20">20問</option>
+                    <option value="50">50問</option>
+                    <option value="100">100問</option>
+                    <option value="custom">自由設定</option>
+                </select>
+                <input type="number" id="customCount" min="1" style="display:none; margin-top:10px;" placeholder="問題数を入力">
+            </div>
+
+            <div class="form-group">
+                <label>出題順</label>
+                <select id="questionOrder">
+                    <option value="sequential">番号順</option>
+                    <option value="random">ランダム</option>
+                </select>
+            </div>
+            <!-- ★★★★★ここまで変更★★★★★ -->
+            
+            <div class="form-group">
+                <label>チェック</label>
+                <select id="checkFilter">
+                    <option value="all">全問出題</option>
+                    <option value="checked">チェックありからの出題</option>
+                    <option value="unchecked">チェックなしからの出題</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-large" onclick="startTest()">テスト開始</button>
+            
+            <div class="seed-section">
+                <h3>🔑 データ復元機能</h3>
+                <p>チェック状態などを保存・復元できます</p>
+                <div class="form-group">
+                    <label>シード（保存データ）</label>
+                    <textarea id="seedInput" class="seed-input" placeholder="ここに保存したシードを貼り付けて「復元」ボタンを押してください"></textarea>
+                </div>
+                <!-- ★★★★★機能強化: エクスポート・インポートの明確化★★★★★ -->
+                <button class="btn btn-secondary" onclick="exportSeed()">現在の状態をエクスポート</button>
+                <button class="btn btn-secondary" onclick="importSeed()">シードからインポート</button>
+            </div>
+        </div>
+        
+        <!-- テスト画面 -->
+        <div class="screen" id="testScreen">
+            <div class="word-display">
+                <div class="word-card">
+                    <div class="word-text" id="currentWord"></div>
+                    <button class="audio-btn" onclick="playAudio()" title="音声再生">🔊</button>
+                </div>
+                
+                <div class="answer-display" id="answerDisplay"></div>
+                
+                <button class="btn btn-large" id="showAnswerBtn" onclick="showAnswer()">回答を表示</button>
+                
+                <div id="judgmentButtons" style="display:none;">
+                    <button class="btn btn-success" onclick="markCorrect()">正解</button>
+                    <button class="btn btn-danger" onclick="markIncorrect()">不正解</button>
+                </div>
+            </div>
+            
+            <div class="test-controls">
+                <button class="btn btn-secondary" onclick="goToSetup()">設定に戻る</button>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="wordCheckbox">
+                    <label for="wordCheckbox">チェック</label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- テスト終了画面 -->
+        <div class="screen" id="resultScreen">
+            <h2>テスト結果</h2>
+            
+            <div class="result-summary">
+                <h3 id="resultSummary"></h3>
+            </div>
+            
+            <div id="resultList"></div>
+            
+            <div class="result-controls">
+                <button class="btn" onclick="showAllResults()">全結果を表示</button>
+                <button class="btn btn-danger" onclick="checkIncorrectWords()">間違えた問題にチェック</button>
+                <button class="btn btn-success" onclick="retryIncorrect()">間違えた問題のみ再テスト</button>
+                <button class="btn btn-secondary" onclick="goToSetup()">新しいテスト</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let vocabulary = []; // アプリ全体の単語リスト
+        let currentTest = []; // 現在のテストで出題される単語リスト
+        let currentQuestionIndex = 0; // 現在の問題のインデックス
+        let testResults = []; // テスト結果（正誤など）
+        let showingAnswer = false; // 回答表示中かどうかのフラグ
+        let wordChecks = {}; // 各単語のチェック状態を保存するオブジェクト { "englishWord": true/false }
+        
+        // ★★★★★ここから変更★★★★★
+        // CSVデータを直接コードに埋め込みます
+        // ここにあなたの単語データを追加・編集してください
+        const EMBEDDED_CSV_DATA = `agree,[自] 賛成する
+oppose,[他] ～に反対する
+advise,[他] ～に忠告する
+tip,[名] 助言
+discuss,[他] ～について話し合う
+blame,[他] ～に責任があるとする
+argue,[他] （that S V）～と主張する
+claim,[他] （that S V）～と主張する
+complain,[自] 文句を言う
+offer,[他] ～を申し出る
+suggest,[他] ～を示唆する
+recommend,[他] ～を推薦する
+grateful,[形] 感謝している
+apologize,[自] （to ～）（～に）謝る
+excuse,[名] 言い訳
+celebrate,[他] ～を祝う
+admire,[他] ～に感心する
+impress,[他] ～に感銘を与える
+award,[名] 賞
+describe,[他] ～を説明する
+explain,[他] ～を説明する
+communicate,[自] （with ～）（～と）意思の疎通をはかる
+express,[他] （意見，気持ち）を表現する
+promise,[名] 約束
+information,[名] 情報〈不可算〉
+technology,[名] （科学）技術
+research,[名] （学術）研究
+material,[名] 材料
+artificial,[形] 人工的な
+electric,[形] 電力の
+invent,[他] ～を発明する
+discover,[他] ～を発見する
+develop,[自] 発達する
+skill,[名] 技術
+ability,[名] 能力
+talent,[名] 才能
+effort,[名] 努力
+practice,[名] 練習
+game,[名] 試合
+achieve,[他] ～を達成する
+manage,[他] （to do）何とかして～する
+improve,[他] ～を改善する
+produce,[他] ～を生産する
+create,[他] ～を創造する
+establish,[他] ～を確立する
+save,[他] （時間，手間）を省く
+medicine,[名] （for ～）（～の）薬
+patient,[名] 患者
+condition,[名] 状態
+medical,[形] 医療の
+stress,[名] ストレス
+suffer,[自] （from ～）（病気などで）苦しむ
+exercise,[名] 運動
+breathe,[自] 呼吸する
+thirsty,[形] のどが渇いた
+physical,[形] 身体的な
+fever,[名] （体温の）熱
+strength,[名] （physical －）体力
+tear,[名] （通例 －s）涙〈可算〉
+taste,[自] ～の味がする
+rule,[名] 規則
+role,[名] 役割
+habit,[名] 習慣
+custom,[名] 習慣
+tradition,[名] 伝統
+society,[名] 社会〈不可算〉
+law,[名] （the－）（集合的に）法律
+ancestor,[名] 祖先
+population,[名] 人口
+native,[形] 母国の
+abroad,[副] 海外へ
+local,[形] その土地の
+survey,[名] 調査〈可算〉
+evidence,[名] 証拠〈不可算〉
+value,[名] 価値
+treasure,[名] 財宝
+fashion,[名] 流行
+public,[名] （the －）大衆
+vote,[名] 投票（数）
+government,[名] 政府
+nation,[名] 国家
+capital,[名] 首都
+state,[名] 州
+political,[形] 政治的な
+price,[名] 価格
+cost,[他] （費用）を要する
+sum,[名] （修飾語を伴って）金額
+budget,[名] 予算
+fee,[名] （会費，遊園地などの）料金
+fare,[名] 運賃
+bill,[名] 勘定
+trade,[名] 貿易
+wealth,[名] 富
+economy,[名] 経済
+company,[名] 会社
+task,[名] 仕事〈可算〉
+earn,[他] （金）を稼ぐ
+hurt,[自] （身体の部位が）痛む
+injure,[他] ～を痛める
+damage,[他] ～に損害を与える
+destroy,[他] ～を（完全に）破壊する
+ruin,[他] ～を台無しにする
+danger,[名] 危険
+neighbor,[名] 近所の人
+audience,[名] 聴衆
+crowd,[名] 群衆
+author,[名] 著者
+staff,[名] （集合的に）職員
+clerk,[名] 〈米〉店員
+customer,[名] 客
+passenger,[名] 乗客
+elderly,[形] 年配の
+female,[形] 女性の
+head,[自] 向かう
+follow,[他] ～の後について行く
+wander,[自] 歩き回る
+travel,[自] 旅行する
+pass,[他] ～を通り過ぎる
+likely,[形] （to do）～しそうだ
+natural,[形] 当然の
+certain,[形] 確かな
+probably,[副] おそらく
+face,[他] ～に直面する
+avoid,[他] ～を避ける
+solve,[他] ～を解決する
+trouble,[名] 問題
+issue,[名] 問題
+cheer,[他] （on）～に声援を送る
+encourage,[他] （A to do）（A）に（～するよう）促す
+support,[他] ～を支持する
+prevent,[他] ～を妨げる
+deny,[他] ～を否定する
+enable,[他] （A to do）（A）に［が］（～することを）可能にする
+succeed,[自] （in ～）（～に）成功する
+miss,[他] ～を逃す
+fail,[自] （in［at］～）（～に）失敗する
+mistake,[名] 間違い
+check,[他] ～を調べる
+hide,[他] ～を隠す
+draw,[他] （線で絵など）を描く
+join,[他] （クラブ，団体など）に加わる
+throw,[他] ～を投げる
+operate,[他] （機械など）を操作する
+repair,[他] ～を修理する
+sew,[他] ～を縫う
+raise,[他] ～を上げる
+serve,[他] （飲食物）を出す
+pour,[他] ～を注ぐ
+spill,[他] ～をこぼす
+pretend,[自] （to do / that S V）（～する/ ～である）ふりをする
+behave,[自] ふるまう
+bear,[他] （can －）～に耐える
+explore,[他] ～を探検する
+happen,[自] （to ～）（～に）起こる
+appear,[自] 現れる
+remain,[自] ～のままでいる
+survive,[自] 生き残る
+belong,[自] （to ～）所属している
+represent,[他] ～を代表する
+base,[他] ～の基礎を置く
+include,[他] ～を含む
+contain,[他] ～を含む
+own,[形] （所有格の後で）自分自身の
+share,[他] ～を共有する
+collect,[他] （同種の物）を集める
+gather,[他] ～を集める
+history,[名] 歴史
+subject,[名] 科目
+education,[名] 教育
+knowledge,[名] 知識
+uniform,[名] 制服
+grade,[名] （小，中，高の）学年
+senior,[名] （高校，大学の）最上級生
+graduate,[自] （from ～）（～を）卒業する
+decide,[他] （to do）（～すること）を決定する
+judge,[他] ～を判断する
+quit,[他] ～を（完全に）やめる
+retire,[自] （from ～）（～を）引退する
+review,[名] 再検討
+choose,[他] ～を選ぶ
+imagine,[他] ～を想像する
+guess,[他] ～を推測する
+expect,[他] ～を予期する
+predict,[他] ～を予測する
+remember,[他] （doing）（過去にしたこと）を覚えている
+remind,[他] （A of B）（A）に（B のことを）思い出させる
+realize,[他] ～を（はっきり）理解する
+appreciate,[他] ～を（正しく）理解する
+accept,[他] ～を受け入れる
+consider,[他] ～をよく考える
+mind,[自] 気にする
+wonder,[他] （wh－節 / if S V）～かなと思う
+seem,[自] ～のように思われる
+compare,[他] （A with［to
+concentrate,[自] （on ～）（～に）集中する
+focus,[自] （on ～）（～に）焦点を当てる
+allow,[他] （人が）～を許可する
+admit,[他] ～を認める
+ground,[名] 地面
+pollution,[名] 汚染
+sight,[名] 光景
+view,[名] 眺め
+landscape,[名] 風景
+nature,[名] （無冠詞）自然
+seed,[名] 種
+plant,[名] 植物
+bloom,[自] （花が）咲く
+harvest,[名] 収穫
+insect,[名] 昆虫
+earthquake,[名] 地震
+temperature,[名] 温度
+degree,[名] （温度などの）度
+flood,[名] 洪水
+freeze,[自] 凍る
+reflect,[他] ～を反射する
+polite,[形] （人，言動が）礼儀正しい
+rude,[形] 無礼な
+lonely,[形] 孤独な
+lazy,[形] （やる気がなく）怠惰な
+strict,[形] 厳しい
+ugly,[形] 醜い
+intelligent,[形] 知的な
+silly,[形] ばかな
+nervous,[形] あがって
+awake,[形] 目を覚まして
+attitude,[名] 態度
+character,[名] 性格
+characteristic,[名] 特徴〈可算〉
+feature,[名] 特徴
+detail,[名] 詳細
+advantage,[名] （over ～）（～に対する）利点
+fault,[名] （ちょっとした）欠点
+quality,[名] 質〈不可算〉
+correct,[形] 正確な
+ideal,[形] 理想的な
+fair,[形] 公正な
+appropriate,[形] 適切な
+famous,[形] （for one’s ～）（～で）有名な
+elementary,[形] 初歩的な
+major,[形] 主要な
+matter,[自] 重要である
+bright,[形] 明るい
+brilliant,[形] 輝いている
+lively,[形] 生き生きとした
+comfortable,[形] （物が）快適な
+pleasant,[形] （人にとって）楽しい
+convenient,[形] 都合がよい
+FALSE,[形] 誤った
+terrible,[形] ひどい
+awful,[形] ひどい
+thin,[形] 薄い
+tight,[形] 引き締まった
+loose,[形] ゆるい
+raw,[形] 生の
+empty,[形] 空の
+smooth,[形] 滑らかな
+direct,[形] 直接的な
+familiar,[形] 知られた
+similar,[形] （to ～）（～に）似た
+differ,[自] 異なる
+vary,[自] さまざまだ
+specific,[形] 特定の
+common,[形] 普及した
+unusual,[形] 珍しい
+add,[他] ～を加える
+increase,[自] 増える
+reduce,[他] ～を減らす
+divide,[他] ～を分割する
+count,[他] ～を数える
+weigh,[自] ～の重さがある
+quarter,[名] 4 分の1
+lot,[名] （a － of ～）多くの～
+pile,[名] 積み重ね
+rate,[名] 割合
+figure,[名] 数字
+lack,[名] （（a）－ of ～）（～の）不足
+extra,[形] 余分な
+ready,[形] 用意ができている
+prepare,[他] ～の準備をする
+adjust,[自] （to ～）（～に）慣れる
+apply,[自] （to ～）（～に）当てはまる
+suit,[他] （人）に適している
+case,[名] 場合
+scene,[名] （劇，小説などの）場面
+chance,[名] （to do）（～する）機会
+opportunity,[名] （よい）機会
+experience,[名] 経験
+time,[名] （漠然とした）時間
+spring,[名] 春
+minute,[名] （時間の）分
+period,[名] 時代
+generation,[名] 世代
+anniversary,[名] 記念日
+recently,[副] 最近
+used,[助] （to ～）以前は～だった
+early,[副] （時間，時期が）早く
+first,[形] 第1 の
+latest,[形] （the －）最新の
+modern,[形] 現代の
+latter,[形] 後半の
+spend,[他] （時間）を費やす
+delay,[他] ～を遅らせる
+borrow,[他] ～を借りる
+lend,[他] （無償で）～を貸す
+rent,[他] ～を借りる
+provide,[他] ～を供給する
+shelf,[名] 棚（の一段）
+board,[名] （細長い）板
+garbage,[名] ごみ
+item,[名] 品物
+wheel,[名] 車輪
+note,[名] メモ
+present,[名] プレゼント
+stuff,[名] （漠然とした）もの
+string,[名] ひも
+leisure,[名] 余暇
+diet,[名] 食事
+furniture,[名] 家具〈不可算〉
+refrigerator,[名] 冷蔵庫
+traffic,[名] 交通（量）〈不可算〉
+jam,[名] 渋滞
+sell,[他] ～を売る
+pay,[他] （A for B） （B の代金としてA）を支払う
+wear,[他] ～を身につけている
+clothes,[名] 服〈複数扱い〉
+marry,[他] ～と結婚する
+greet,[他] ～に挨拶する
+order,[他] ～を注文する
+room,[名] 部屋
+story,[名] 階
+site,[名] 用地
+yard,[名] （主に〈米〉）庭
+bottom,[名] 底
+line,[名] 列
+row,[名] 列
+background,[名] 背景
+direction,[名] 方向
+art,[名] 芸術
+culture,[名] 文化
+cartoon,[名] 漫画
+novel,[名] 小説
+instrument,[名] 楽器
+tune,[名] 曲
+sentence,[名] （ 1 つ1 つの）文
+article,[名] 記事
+passage,[名] （文章などの）一節
+vocabulary,[名] 語彙
+rumor,[名] うわさ
+spell,[他] ～をつづる
+pronounce,[他] （単語など）を発音する
+sign,[名] 兆候
+mean,[他] ～を意味する
+publish,[他] ～を出版する
+display,[他] ～を展示する
+trust,[他] ～を信頼する
+depend,[自] （物，事が主語）（on ～）（～）次第である
+rely,[自] （on ～）（～に）頼る
+pray,[自] 祈る
+beg,[他] ～を嘆願する
+prefer,[他] （A to B） （B よりA）を好む
+weep,[自] しくしく泣く
+hate,[他] ～を嫌う
+worry,[自] 心配をする
+anxious,[形] （about ～）（～を）心配して
+satisfy,[他] ～を満足させる
+annoy,[他] ～をいらだたせる
+bother,[他] ～に面倒をかける
+disturb,[他] （うるさくして）～に迷惑をかける
+frighten,[他] ～をおびえさせる
+upset,[他] ～を動揺させる
+regret,[他] ～を後悔する
+favor,[名] 親切な行為
+interest,[名] 関心
+pity,[名] 残念なこと〈可算〉
+due,[形] （due to （名詞））（名詞）が原因で
+reason,[名] 理由
+result,[名] 結果
+effect,[名] 効果
+influence,[名] 影響（力）
+cause,[他] ～を引き起こす
+affect,[他] ～に影響を与える
+way,[名] 方法
+manner,[名] 方法
+purpose,[名] 目的
+sake,[名] （for ～）ため
+right,[副] （場所や時の副詞（句）を修飾して）ちょうど
+complete,[形] 完全な
+hardly,[副] （程度）ほとんど～ない
+nearly,[副] ほとんど
+partly,[副] ある程度
+actually,[副] 実は
+indeed,[副] （強調として）実際に
+even,[副] さえも
+exactly,[副] 正確に
+gradually,[副] 徐々に
+therefore,[副] それゆえに
+instead,[副] 代わりに
+until,[前] ～まで（ずっと）
+besides,[前] ～に加えて
+except,[前] ～を除いて
+debate,[名] 討論
+criticize,[他] ～を批判する
+accuse,[他] ～を非難する
+insist,[自] （on ～）（～と）言い張る
+object,[自] （to ～）（～に感情的に）反対する
+protest,[自] （against ～）（～に対して）抗議する
+controversial,[形] 論争を招く
+bound,[形] （to do）きっと～（する
+bet,[他] （that S V）きっと～だと思う
+congratulate,[他] （人）を祝う
+praise,[他] （A for B）（A）を（B のことで）褒める
+honor,[名] 名誉
+chat,[自] おしゃべりする
+refer,[自] （to ～）言及する
+mention,[他] ～について述べる
+convey,[他] ～を伝える
+emphasize,[他] ～を強調する
+exaggerate,[他] ～を誇張する
+reply,[自] （to ～）（～に）返事をする
+respond,[自] （to ～）（手紙や問いなどに）返答する
+whisper,[自] ささやく
+remark,[名] 発言
+observe,[他] ～を観察する
+theory,[名] 理論
+analysis,[名] 分析
+experiment,[名] 実験
+device,[名] 装置
+phenomenon,[名] 現象
+substance,[名] 物質
+chemical,[名] （通例 －s）化学物質
+fuel,[名] 燃料
+nuclear,[形] 原子力の
+statistics,[名] 統計（値）〈複数扱い〉
+pursue,[他] ～を追求する
+accomplish,[他] ～をやり遂げる
+overcome,[他] ～を克服する
+fulfill,[他] （義務，願望など）を果たす
+devote,[他] （A to B） （A）を（B に）ささげる
+aim,[自] 狙う
+challenge,[名] 難問
+trial,[名] 試み
+dizzy,[形] めまいがして
+pale,[形] （顔色が）青白い
+appetite,[名] 食欲
+starve,[自] （be －ing）とてもお腹が空いている
+mental,[形] 精神の
+rest,[名] 休憩
+ache,[名] 痛み
+surgery,[名] 手術
+disease,[名] 病気
+symptom,[名] （通例 －s）症状
+cancer,[名] がん
+ambulance,[名] 救急車
+recover,[自] （from ～）（～から）回復する
+sore,[形] （のどや筋肉が）痛い
+swell,[自] （手足などが）腫れる
+cough,[自] 咳をする
+bleed,[自] 出血する
+faint,[形] （色，光などが）かすかな
+exhaust,[他] ～を疲れ果てさせる
+cure,[他] ～を治療する
+disabled,[形] 障がいのある
+stiff,[形] （筋肉などが）凝った
+muscle,[名] 筋肉
+tongue,[名] 舌
+sense,[名] 感覚
+sweat,[名] 汗（通例〈不可算〉）
+nationality,[名] 国籍
+citizen,[名] 市民
+civil,[形] （一般）市民の
+racial,[形] 人種の
+domestic,[形] 国内の
+rural,[形] 田舎の
+suburb,[名] （通例the －s）郊外
+border,[名] 国境（地帯）
+burden,[名] 重荷
+impact,[名] （on ～）（～への）影響
+status,[名] 地位
+equal,[形] （to ～）（～に）等しい
+relationship,[名] 関係
+reputation,[名] （人，物の）評判〈可算〉
+trend,[名] （世の中の）風潮
+service,[名] （政府あるいは企業による）事業
+religion,[名] 宗教
+moral,[形] 道徳的な
+standard,[名] 基準
+prosperity,[名] 繁栄
+crisis,[名] 危機
+prejudice,[名] 偏見
+discrimination,[名] 差別
+charity,[名] 慈善（事業）〈不可算〉
+benefit,[名] 恩恵
+welfare,[名] 福祉
+community,[名] （地域）社会
+individual,[名] 個人
+official,[名] 役人
+immigrant,[名] （外国からの）移民
+volunteer,[名] ボランティア
+contribute,[自] （to ～）貢献する
+abolish,[他] ～を廃止する
+impose,[他] （A on B）（A）を（B に）課す
+access,[名] 利用する権利
+duty,[名] 義務
+compulsory,[形] 義務的な
+responsible,[形] （人が主語）責任がある
+policy,[名] 政策
+elect,[他] ～を（選挙で）選ぶ
+industry,[名] 工業
+income,[名] 収入
+profit,[名] 利益
+tax,[名] 税金（〈米〉→〈可算〉　〈英〉→〈不可算〉）
+expense,[名] 費用
+debt,[名] 借金
+deposit,[名] 預金
+charge,[名] 料金
+wage,[名] 賃金
+recession,[名] 不況
+consume,[他] ～を消費する
+waste,[他] ～を浪費する
+invest,[他] （A in B）（A）を（B に）投資する
+import,[他] ～を輸入する
+financial,[形] 財政的な
+hire,[他] ～を（一時的に）雇う
+employ,[他] （人）を雇う
+resign,[自] （as ～）（～を）辞職する
+qualify,[自] （for ～）（～の）資格がある
+assign,[他] ～を割り当てる
+occupation,[名] 職業〈可算〉
+career,[名] 職業
+profession,[名] （専門的な）職業
+unemployment,[名] 失業
+document,[名] 書類
+department,[名] （組織の）部門
+branch,[名] 支店
+retail,[名] 小売り〈不可算〉
+system,[名] 組織
+structure,[名] 構造
+architecture,[名] 建築（様式）〈不可算〉
+construction,[名] 建設〈不可算〉
+function,[名] 機能
+surface,[名] 表面
+aspect,[名] 側面
+edge,[名] 端
+consist,[自] （of ～）（～で）構成されている
+compose,[他] ～を構成する
+attach,[他] ～をくっつける
+connect,[他] ～をつなげる
+relate,[他] （A to B）（A）を（B に）関連づける
+associate,[他] （A with B）（A）を（B と）関連づける
+stick,[他] ～を貼り付ける
+separate,[他] ～を引き離す
+thief,[名] 泥棒
+crime,[名] 犯罪
+motive,[名] 動機
+punish,[他] （（人）for ～）（人）を（～の理由で）罰する
+violate,[他] （法律など）に違反する
+legal,[形] 合法の
+enemy,[名] 敵
+compete,[自] 競争する
+defeat,[他] （相手）を打ち負かす
+victim,[名] 犠牲者
+obstacle,[名] （to ～）（～に対する）障害〈可算〉
+harm,[名] 害〈不可算〉
+invade,[他] （プライバシーなど）を侵害する
+endanger,[他] ～を危険にさらす
+interrupt,[他] ～を中断する
+spoil,[他] ～を台無しにする
+spectator,[名] 観客
+relative,[名] （家族も含めて）親戚
+enter,[他] ～に入る
+accompany,[他] （人が主語）～と一緒に行く
+departure,[名] 出発
+destination,[名] 目的地
+transportation,[名] 交通機関〈不可算〉
+via,[前] ～経由で
+lead,[自] （to ～）（～に）至る
+rise,[自] 上がる
+lower,[他] ～を下げる
+flow,[自] 流れる
+burst,[自] 破裂する
+crack,[自] 割れる
+melt,[自] （固体が）溶ける
+progress,[名] 進歩
+advance,[名] 進歩
+deal,[自] （with～）（～を）扱う
+handle,[他] ～を扱う
+cope,[自] （with～）（～に）（うまく）対処する
+treat,[他] （副詞を伴って）～を扱う
+clue,[名] （to ～）（～の）手がかり
+restrict,[他] ～を制限する
+limit,[他] （数量，範囲）を制限する
+forbid,[他] ～を禁じる
+ban,[名] 禁止〈可算〉
+refuse,[他] ～を断る
+reject,[他] ～を拒絶する
+persuade,[他] （A to do）（A）を説得して～させる
+convince,[他] （A of B）（A）に （Bを）確信させる
+inspire,[他] ～を奮起させる
+discourage,[他] ～のやる気をなくさせる
+promote,[他] ～を促進する
+expand,[自] 拡大する
+extend,[他] ～を延長する
+broaden,[他] ～を広げる
+spread,[他] ～を広げる
+tie,[他] （荷物など）を縛る
+bind,[他] ～を結びつける
+fasten,[他] ～を固定する
+fix,[他] ～を固定する
+install,[他] （機械など）を設置する
+resist,[他] ～を我慢する
+obey,[他] ～に従う
+engage,[自] 従事する
+bump,[自] （into～）ぶつかる
+crash,[自] 激突する
+bend,[自] 身をかがめる
+hug,[他] （人）を （愛情こめて）抱きしめる
+stare,[自] （at ～）（～を）じっと見つめる
+gaze,[自] （at［on］～）（～を）見つめる
+glance,[自] ちらりと見る
+glimpse,[他] ～がちらりと見える
+stretch,[他] （手足や体）を伸ばす
+stumble,[自] つまずく
+press,[他] ～を（強く）押す
+drag,[他] ～を（ずるずると）引きずる
+lean,[自] （against［on］～）（～に）寄りかかる
+scratch,[他] ～をひっかく
+bow,[自] おじぎする
+nod,[自] うなずく
+sigh,[自] ため息をつく
+yawn,[自] あくびをする
+bury,[他] ～を埋める
+perform,[他] ～を遂行する
+adopt,[他] ～を採用する
+escape,[自] （from ～）（～から）逃れる
+scatter,[他] ～をまき散らす
+fold,[他] ～を折る
+hang,[他] ～を掛ける
+release,[他] ～を解放する
+strike,[他] ～を打つ
+beat,[他] ～を打つ
+protect,[他] ～を守る
+twist,[他] ～を（ねじ）曲げる
+stir,[他] （液体など）を混ぜる
+shake,[他] ～を振る
+burn,[自] 焼ける
+skip,[他] ～をサボる
+expose,[他] ～をさらす
+dip,[他] ～を（ちょっと）つける
+polish,[他] ～を磨く
+cheat,[自] ごまかす
+attend,[他] ～に出席する
+participate,[自] （in ～）（～に）参加する
+imitate,[他] ～をまねる
+exist,[自] 存在する
+arise,[自] 生じる
+occur,[自] 生じる
+generate,[他] （電気，利益など）を生み出す
+involve,[他] （be －d in ～）（事件などに）巻き込まれる
+require,[他] ～を必要とする
+counterpart,[名] （to ～）（～に）対応する［（～と）同等の］人［物
+maintain,[他] ～を維持する
+last,[自] （時間的に）続く
+persist,[自] 持続する
+gain,[他] ～を増す
+obtain,[他] （資格，許可，情報など）を得る
+acquire,[他] ～を習得する
+examine,[他] ～を調査する
+search,[他] （A for B） （B（物）を求めてA（場所））を捜す
+reunion,[名] 同窓会
+scholarship,[名] 奨学金〈可算〉
+logic,[名] 論理（学）
+instruction,[名] （通例－s）指示
+determine,[他] ～を決める
+conclude,[他] （that S V）～と結論を下す
+distinguish,[他] ～を区別する
+classify,[他] ～を分類する
+estimate,[他] ～を推定する
+select,[他] （注意深く）～を選ぶ
+organize,[他] （考えなど）をまとめる
+recognize,[他] （知り合いなど）が誰だかわかる
+suppose,[他] （be －d to do）～することになっている
+assume,[他] ～と思い込む
+care,[自] （否定文で）気にする
+doubt,[他] ～を疑う
+notice,[他] ～に気がついている
+aware,[形] 気づいている
+conscious,[形] 意識している
+concerned,[形] （with［about］～）（～に）関心を持っている
+regard,[他] （A as B）（A）を（B と）みなす
+commit,[他] （oneself to ～ / be －ed to ～）～に専念する
+memorize,[他] ～を暗記する
+approve,[自] （of ～）（～を）認める
+forgive,[他] （人，過ち）を許す
+grant,[他] ～を認める
+recall,[他] ～を思い出す
+abandon,[他] ～を捨てる
+rid,[名] （get － of ～）処分する
+eliminate,[他] （不要な人，物，事）を排除する
+relieve,[他] ～を取り除く
+remove,[他] ～を取り除く
+resource,[名] （－s）（石油などの）資源
+conservation,[名] 保護
+preserve,[他] （自然など）を保護する
+disaster,[名] 災害
+planet,[名] 惑星
+environment,[名] 環境
+horizon,[名] 水平線
+agriculture,[名] 農業〈不可算〉
+crop,[名] 作物
+soil,[名] 土
+weed,[名] 雑草
+drown,[自] 溺れ死ぬ
+leak,[自] 漏れる
+climate,[名] 気候
+atmosphere,[名] （the－）大気
+forecast,[名] 予報
+thermometer,[名] 温度計
+humid,[形] 湿気が多い
+tropical,[形] 熱帯の
+solar,[形] 太陽の
+mosquito,[名] 蚊
+species,[名] 種〈単複同形〉
+extinct,[形] 絶滅した
+feed,[他] ～にえさを与える
+energetic,[形] （人，運動などが）活発な
+greedy,[形] 貪欲な
+brave,[形] 勇敢な
+generous,[形] 気前のよい
+intellectual,[形] 知的な
+curious,[形] （人が主語）好奇心が強い
+imaginative,[形] 想像力豊かな
+talkative,[形] おしゃべりの
+afford,[他] （can －）～する余裕がある
+eager,[形] 熱心な
+selfish,[形] 利己的な
+aggressive,[形] 攻撃的な
+cruel,[形] 残酷な
+addicted,[形] ～の中毒になっている
+stubborn,[形] 頑固な
+earnest,[形] 真面目な
+bold,[形] 大胆な
+guilty,[形] 申し訳なく思う
+innocent,[形] （of ～）（～に関して）無実の
+sincere,[形] （心から）誠実な
+modest,[形] （人が）謙虚な
+stupid,[形] ばかな
+indifferent,[形] 無関心で
+punctual,[形] （約束などの）時間を守る
+coward,[名] 臆病者
+precise,[形] 正確な
+accurate,[形] 正確な
+proper,[形] 適切な
+tidy,[形] （主に〈英〉）きちんとした
+neat,[形] きちんとした
+efficient,[形] 能率的な
+reasonable,[形] 理にかなった
+significant,[形] 重要な
+precious,[形] （時間や命などが）貴重な
+essential,[形] 不可欠な
+fundamental,[形] 根本的な
+critical,[形] 重大な
+serious,[形] 深刻な
+complex,[形] 複雑な
+complicated,[形] 複雑な
+delicate,[形] 繊細な
+plain,[形] 明白な
+obvious,[形] 明白な
+remarkable,[形] 注目すべき
+outstanding,[形] 傑出した
+various,[形] さまざまな
+diverse,[形] 多様な
+sort,[名] 種（類）
+fancy,[形] 高級な
+marvelous,[形] 驚くべき
+fabulous,[形] とても素敵な
+active,[形] 積極的な
+positive,[形] 前向きな
+pure,[形] 純粋な
+steady,[形] 着実な
+flexible,[形] 柔軟な
+ripe,[形] 熟した
+mature,[形] 成熟した
+stable,[形] 安定した
+negative,[形] 否定的な
+vague,[形] 曖昧な
+weird,[形] 変な
+rough,[形] （表面が）粗い
+severe,[形] （天候，批判，罰則などが）厳しい
+passive,[形] 受動的な
+vain,[形] （in －）無駄に
+fake,[形] 偽の
+risky,[形] 危険な
+absurd,[形] ばかげた
+odd,[形] 奇妙な
+contrast,[名] 対比
+valid,[形] （理由，主張などが）妥当な
+available,[形] 手に入る
+casual,[形] 気楽な
+rare,[形] 珍しい
+practical,[形] （人，知識が）現実的な
+brand-new,[形] 新品の
+rapid,[形] 急速な
+urgent,[形] 緊急の
+sharp,[形] （変化，方向転換などが）急激な
+calm,[形] 落ち着いた
+shallow,[形] 浅い
+bare,[形] むき出しの
+naked,[形] （人が）裸の
+independent,[形] 独立した
+tense,[形] 張り詰めた
+broad,[形] 幅広い
+narrow,[形] 狭い
+vacant,[形] 空いている
+vivid,[形] （記憶，描写などが）鮮明な
+mutual,[形] （感情，行為が）相互の
+awkward,[形] ぎこちない
+objective,[形] 客観的な
+manual,[形] 手を使う
+alike,[形] 似ている
+tend,[自] （to do）～する傾向にある
+deserve,[他] ～に値する
+fragment,[名] 破片〈可算〉
+ease,[名] 簡単さ
+range,[名] 範囲
+scale,[名] 規模
+unique,[形] （to ～）（～に）特有の
+particular,[形] ある特定の
+general,[形] 一般的な
+ordinary,[形] 平凡な
+typical,[形] 典型的な
+account,[自] （for ～）占める
+calculate,[他] ～を計算する
+measure,[他] ～を測る
+split,[他] ～を割る
+volume,[名] 容積
+proportion,[名] 比率
+dozen,[名] ダース
+amount,[名] 量
+mass,[名] 大量
+shortage,[名] 不足〈可算〉
+enormous,[形] 莫大な
+spare,[形] 余分な
+arrange,[他] ～を手配する
+adapt,[自] 適応する
+match,[他] ～と調和する
+fit,[他] （サイズが人）に合う
+emergency,[名] 緊急事態
+occasion,[名] 場合
+circumstance,[名] （通例 －s）状況
+incident,[名] （主に不快な）出来事
+current,[形] 最新の
+temporary,[形] 一時的な
+permanent,[形] 永久的な
+previous,[形] （時間，順序で）前の
+former,[名] （the －）前者
+annual,[形] 年に1度の
+contemporary,[形] 現代の
+lately,[副] 最近
+immediately,[副] すぐに
+supply,[他] ～を供給する
+replace,[他] ～に取って代わる
+exchange,[他] ～を交換する
+substitute,[他] （A for B） （B の）代わりに（A）を用いる
+submit,[他] （願書，辞表など）を提出する
+alternative,[名] （to ～）（～の）代わりのもの
+deliver,[他] ～を配達する
+enclose,[他] ～を同封する
+envelope,[名] 封筒
+trick,[名] （悪意のない）いたずら
+load,[名] 荷（物）〈可算〉
+content,[名] 中身
+routine,[名] 日課
+household,[名] （集合的に）所帯
+good,[名] （－s）商品
+luxury,[名] 高級（品）
+credit,[名] （－ card）クレジットカード
+questionnaire,[名] アンケート
+reservation,[名] 予約
+applause,[名] 拍手〈不可算〉
+fuss,[名] 大騒ぎ
+reward,[名] 報酬
+farewell,[名] 別れ（のあいさつ）
+reception,[名] もてなし
+hospitality,[名] もてなし
+portion,[名] （食事の）1盛り
+laundry,[名] 〈米〉洗濯
+stain,[名] シミ
+dye,[他] ～を染める
+outlet,[名] （電気の）コンセント
+nap,[名] 昼寝
+wake,[自] 目が覚める
+vending machine,[名] 自動販売機
+grocery,[名] 食料雑貨店
+appointment,[名] （病院などの）予約
+consult,[他] ～に相談する
+register,[他] ～を登録する
+subscribe,[自] （to ～）（～を）定期購読する
+guarantee,[他] ～を保証する
+wipe,[他] ～を拭く
+sweep,[他] （床，地面）を掃く
+transfer,[自] （電車などを）乗り換える
+divorce,[自] 離婚する
+fate,[名] 運命
+destiny,[名] 運命
+flavor,[名] 風味
+perfume,[名] 香り
+ingredient,[名] （料理などの）材料
+tender,[形] （肉などが）柔らかい
+bitter,[形] 苦い
+aisle,[名] 通路
+track,[名] 足跡
+district,[名] 地区
+facility,[名] 施設
+basement,[名] 地下（室）
+height,[名] 高さ
+distant,[形] 遠い
+remote,[形] （地理的に）へんぴな
+locate,[他] （be －d）～に位置している
+occupy,[他] ～を占める
+surround,[他] ～を取り囲む
+classical,[形] （音楽，バレエ，ダンスなどで）クラシックの
+civilization,[名] 文明
+heritage,[名] 遺産〈不可算〉
+script,[名] 台本
+tale,[名] 話
+literature,[名] 文学
+tragedy,[名] 悲劇〈可算〉
+poetry,[名] 詩〈不可算〉
+biography,[名] 伝記
+term,[名] 用語
+proverb,[名] ことわざ
+fluent,[形] 流暢な
+translate,[他] ～を翻訳する
+define,[他] ～を定義する
+interpret,[他] ～を解釈する
+quote,[他] ～を引用する
+literally,[副] 文字どおりに
+indicate,[他] （データなどが）～を示す
+reveal,[他] ～を明らかにする
+announce,[他] ～を発表する
+broadcast,[他] ～を放送する
+prove,[他] ～を証明する
+advertise,[他] ～を宣伝する
+seek,[他] ～を求める
+entertain,[他] ～を楽しませる
+amuse,[他] ～を楽しませる
+attract,[他] ～を引きつける
+fascinate,[他] ～を魅了する
+absorb,[他] （be －ed in ～）～に没頭する
+fond,[形] 好きで
+scare,[他] ～をおびえさせる
+alarm,[他] ～をぎょっとさせる
+amaze,[他] ～を驚かせる
+irritate,[他] （長期にわたって）～をいらいらさせる
+puzzle,[他] ～を当惑させる
+confuse,[他] ～を混乱させる
+bore,[他] ～をうんざりさせる
+frustrate,[他] ～を欲求不満にさせる
+disappoint,[他] ～を失望させる
+embarrass,[他] ～に恥ずかしい思いをさせる
+ashamed,[形] 恥ずかしい
+uneasy,[形] 不安な
+hesitate,[自] ためらう
+reluctant,[形] （to do）（～するのは）気が進まない
+tremble,[自] 震える
+boast,[自] 自慢する
+jealous,[形] （of ～）（～に）嫉妬した
+envy,[他] ～を羨ましく思う
+yell,[自] 叫ぶ
+respect,[他] （人）を尊敬する
+despair,[名] 絶望
+emotion,[名] （特に強い）感情〈可算〉
+sympathy,[名] 同情
+shame,[名] 残念なこと
+ambition,[名] （強い）願望
+confidence,[名] 自信
+courage,[名] 勇気
+ignore,[他] （人，物）を無視する
+owe,[他] （A to B）おかげだ
+fear,[名] 恐怖
+method,[名] 方法
+medium,[名] （情報伝達）手段
+means,[名] 手段〈単複同形〉
+extent,[名] 程度
+extremely,[副] 極度に
+total,[形] 全体の
+largely,[副] 大部分は
+moderate,[形] 適度な
+somewhat,[副] いくぶん
+subtle,[形] かすかな
+possibly,[副] ひょっとすると
+eventually,[副] 最終的に
+necessarily,[副] （not －）必ずしも（～ない）
+frankly,[副] 率直に
+ironically,[副] 皮肉なことに
+moreover,[副] その上
+otherwise,[副] さもなければ
+regardless,[副] （of ～）（～とは）無関係に
+worth,[前] ～の価値がある
+according to,[前] （調査，人の話など）によれば
+propose,[他] ～を提案する
+demand,[他] ～を（強く）要求する
+desire,[名] 願望
+dismiss,[他] （意見や考えなど）を退ける
+bless,[他] ～を祝福する
+glory,[名] 栄光
+compliment,[名] 褒め言葉
+feast,[名] 宴会
+declare,[他] ～を宣言する
+demonstrate,[他] ～を（はっきり）示す
+highlight,[他] ～を強調する
+imply,[他] （暗に）～を意味する
+recite,[他] ～を暗唱する
+ray,[名] 光線
+radiation,[名] 放射線
+laboratory,[名] 研究室
+oxygen,[名] 酸素
+molecule,[名] 分子
+compound,[名] 化合物
+tissue,[名] 組織
+cell,[名] 細胞
+gene,[名] 遺伝子〈可算〉
+solid,[形] 固体の
+satellite,[名] （月などの）衛星
+orbit,[名] 軌道
+launch,[他] （ロケットなど）を打ち上げる
+attempt,[名] 試み
+capacity,[名] 能力
+capable,[形] （of ～）（～する）力がある
+attain,[他] （人が主語）～を達成する
+desperate,[形] 必死の
+struggle,[自] 苦闘する
+dedicate,[他] （A to B）（A）を（B に）ささげる
+pain,[名] 苦痛
+strain,[名] （心身の）負担
+remedy,[名] 治療法
+fatigue,[名] （ひどい）疲労〈不可算〉
+obesity,[名] （病的な）肥満
+nursing,[名] 看護
+terminal,[形] （病気が）末期の
+pregnant,[形] 妊娠した
+heal,[他] ～を治す
+ankle,[名] 足首
+thumb,[名] 親指
+forehead,[名] 額
+chin,[名] 下あご
+chest,[名] 胸（部）
+breast,[名] （主に女性の）胸
+lung,[名] 肺〈可算〉
+organ,[名] 臓器
+vision,[名] 視力
+skeleton,[名] がい骨
+sensation,[名] 感覚
+code,[名] （服装などの）規定
+agenda,[名] 議題
+gender,[名] 性
+liberty,[名] 自由
+humanity,[名] （集合的に）人類
+mankind,[名] （集合的に）人類
+authority,[名] 権威
+justice,[名] 正義
+insurance,[名] 保険〈不可算〉
+hardship,[名] （主に経済的）苦難
+poverty,[名] 貧困〈不可算〉
+chaos,[名] 大混乱
+isolation,[名] 孤立
+interaction,[名] 交流
+region,[名] 地域
+proof,[名] 証拠
+principle,[名] 原理
+origin,[名] 起源
+setting,[名] 環境
+monument,[名] 記念碑
+mission,[名] 任務
+project,[名] 計画
+revolution,[名] 革命
+pension,[名] 年金〈可算〉
+found,[他] ～を創立する
+contract,[名] 契約
+negotiate,[自] （with ～）（～と）交渉する
+cooperate,[自] （with ～）（～と）協力する
+restore,[他] （治安など）を回復する
+conservative,[形] 保守的な
+affair,[名] （－s）情勢
+agency,[名] （政府）機関
+council,[名] 議会
+kingdom,[名] 王国
+republic,[名] 共和国
+empire,[名] 帝国
+security,[名] （国家などの）安全
+aid,[名] 援助
+reform,[名] 改革
+mayor,[名] 市長
+minister,[名] 大臣
+poll,[名] （政治関連の）世論調査
+fortune,[名] 財産
+property,[名] （主に集合的）財産
+fund,[名] （－s）資金
+stock,[名] 株（式）
+bankrupt,[形] 倒産した
+labor,[名] 労働
+overwork,[自] 働きすぎる
+firm,[名] 会社
+union,[名] 労働組合
+administration,[名] 経営
+secretary,[名] 秘書
+editor,[名] （新聞，雑誌などの）編集長
+client,[名] 依頼人
+colleague,[名] （from ～）（～の）同僚
+basis,[名] 基礎
+element,[名] （最も重要な）要素
+constitute,[他] （主語が複数）～を構成する
+unify,[他] ～を統一する
+unite,[自] 団結する
+combine,[他] （A with B） （A）を（B と）結びつける
+murder,[名] 殺人
+arrest,[他] ～を逮捕する
+prison,[名] 刑務所
+vice,[名] （売春，麻薬などの）犯罪〈不可算〉
+witness,[名] 目撃者
+conflict,[名] 対立
+bullet,[名] 弾丸
+wound,[名] 傷
+triumph,[名] 勝利
+military,[形] 軍事的な
+strategy,[名] 戦略
+conquer,[他] （国や地域）を征服する
+defend,[他] （A from B）（B からA）を守る
+quarrel,[自] （with ～）（～と）口論する
+rob,[他] （銀行など）を襲う
+deprive,[他] （A of B） （A）から（B を）奪う
+devastate,[他] （町など）を壊滅させる
+hazard,[名] 危険（になり得るもの）
+orphan,[名] 孤児
+infant,[名] （主に歩く前の）幼児
+slave,[名] 奴隷
+acquaintance,[名] 知人
+merchant,[名] 商人
+resident,[名] 住人
+crew,[名] （集合的に）乗組員
+commute,[自] 通勤する
+chase,[他] ～を追いかける
+overtake,[他] ～を追い越す
+fade,[自] （色，記憶などが）薄れる
+dissolve,[自] 溶ける
+float,[自] 浮かぶ
+sink,[自] 沈む
+fluctuate,[自] （数値，物価が）変動する
+circulate,[自] 循環する
+transform,[他] ～を（大幅に）変える
+shift,[名] （考え方の）転換
+modify,[他] ～を修正する
+revise,[他] （制度，予測，論文など）を修正する
+vehicle,[名] （エンジンの付いた）車両
+voyage,[名] 航海
+confirm,[他] ～を確認する
+ensure,[他] ～を確実にする
+address,[他] ～に取り組む
+approach,[名] （to ～）（～への）取り組み方
+resolve,[他] ～を解決する
+settle,[他] （紛争など）を解決する
+warn,[他] ～に警告する
+force,[他] ～に強いる
+boost,[他] ～を促進させる
+appeal,[自] （to ～）（～に）訴える
+leap,[自] 跳ぶ
+grab,[他] （ぐいっと）～をつかむ
+seize,[他] ～をつかむ
+cast,[他] ～を投げる
+slap,[他] ～を平手打ちする
+stun,[他] ～を気絶させる
+illuminate,[他] ～を照らす
+mend,[他] ～を修繕する
+react,[自] （to ～）（～に）反応する
+endure,[他] （長期にわたり）～に耐える
+encounter,[他] ～に偶然出会う
+neglect,[他] ～を怠る
+undergo,[他] ～を経験する
+trace,[他] ～を捜し出す
+conduct,[他] ～を行う
+emerge,[自] （隠れていたものが）現れる
+unfold,[自] 展開する
+derive,[自] （from ～）（～に）由来する
+possess,[他] ～を所有している
+retain,[他] ～を保持する
+secure,[他] （場所，地位，契約など）を確保する
+capture,[他] ～を捕らえる
+inquiry,[名] （into ～）（～の）調査
+specialize,[自] （in ～）　〈英〉（～を）専攻する
+semester,[名] （米，日本などの2 学期制の）学期
+biology,[名] 生物学
+ecology,[名] 生態（学）
+philosophy,[名] （学問としての）哲学〈不可算〉
+geography,[名] 地理（学）
+psychology,[名] 心理学
+institution,[名] （大学，病院などの）機関
+dormitory,[名] 寮
+notion,[名] 考え
+concept,[名] 概念
+meditation,[名] 瞑想
+insight,[名] （into ～）（～に対する）洞察（力）
+outlook,[名] （人生，世界などに対する）考え方
+caution,[名] 用心
+will,[名] 意志
+option,[名] 選択肢
+nightmare,[名] 悪夢
+keen,[形] （頭脳，感性などが）鋭い
+cherish,[他] ～を大切にする
+intend,[他] （to do）～するつもりだ
+suspect,[他] （that S V）～ではないかと思う
+comprehend,[他] ～を（十分に）理解する
+misunderstand,[他] （人，人の言うこと）を誤解している
+identify,[他] ～を（何なのか）特定する
+permit,[他] ～を許可する
+acknowledge,[他] ～を認める
+trim,[他] ～を刈り込む
+omit,[他] ～を省く
+cultivate,[他] ～を耕す
+shade,[名] 日陰
+breeze,[名] そよ風
+desert,[名] 砂漠
+fog,[名] 霧
+moisture,[名] 湿気
+damp,[形] 湿った
+path,[名] （小）道
+trail,[名] 山道
+stream,[名] 小川
+tide,[名] 潮（の干満）
+habitat,[名] 生息地
+layer,[名] （大気や地面などの）層
+volcano,[名] 火山
+mine,[名] 鉱山
+scent,[名] （花，果物の良い）香り
+wheat,[名] 小麦
+swallow,[名] ツバメ
+web,[名] （クモの）巣
+cattle,[名] ウシ
+kitten,[名] 子ネコ
+organism,[名] 生物
+wildlife,[名] 野生生物
+beast,[名] 野獣
+ape,[名] 類人猿
+mammal,[名] 哺乳動物
+flock,[名] （鳥，羊の）群れ
+breed,[自] 繁殖する
+reproduce,[自] 繁殖する
+hatch,[自] （卵から）かえる
+diligent,[形] 勤勉な
+noble,[形] 高潔な
+arrogant,[形] 傲慢な
+timid,[形] 臆病な
+humble,[形] 控えめな
+inclined,[形] （be ～ to do）～する傾向がある
+principal,[形] 主要な
+prime,[形] （目標，容疑者などが）最重要な
+indispensable,[形] 不可欠な
+grave,[形] 重大な
+definite,[形] 明確な
+evident,[形] 明らかな
+prominent,[形] （物が）目立った
+marked,[形] （名詞の前で）際立った
+grace,[名] 優美さ
+charm,[名] 魅力
+rational,[形] 理性的な
+magnificent,[形] 壮大な
+superior,[形] （be － to ～）（～）より優れている
+loyal,[形] （to ～）（～に）忠実な
+horrible,[形] （物，天気などが）とてもひどい
+miserable,[形] 悲惨な
+dull,[形] 退屈な
+nasty,[形] （人，物，発言などが）不快な
+insane,[形] 正気でない
+ridiculous,[形] ばかげた
+notorious,[形] （for ～）（～で）悪名高い
+evil,[形] （道徳的に）悪い
+mess,[名] 乱雑
+vast,[形] （地域，土地が）広大な
+huge,[形] 巨大な
+tiny,[形] とても小さな
+sphere,[名] 球体
+strip,[名] 細長い一片
+internal,[形] 内部の
+mobile,[形] 流動的な
+steep,[形] （坂などが）険しい
+intense,[形] （感情，競争などが）強烈な
+abstract,[形] 抽象的な
+inevitable,[形] 避けられない
+neutral,[形] 中立の
+brief,[形] 手短な
+potential,[形] 潜在的な
+tough,[形] たくましい
+secondhand,[形] 中古の
+resemble,[他] ～に似ている
+contrary,[名] （on the －）それどころか
+category,[名] 範疇
+scope,[名] 範囲
+respective,[形] それぞれの
+given,[形] （時間，量などが）定められた
+peculiar,[形] （to ～）（～に）固有の
+plenty,[名] （of ～）十分な～
+sufficient,[形] 十分な
+numerous,[形] 多くの
+substantial,[形] かなりの
+unit,[名] 単位
+diameter,[名] 直径
+quantity,[名] 量
+deficiency,[名] 欠乏
+lessen,[他] ～を減らす
+era,[名] 時代
+session,[名] （活動の）期間
+pause,[名] 休止
+meanwhile,[副] その間
+souvenir,[名] 土産
+brick,[名] れんが
+pole,[名] 棒
+thread,[名] 糸
+mischief,[名] いたずら〈不可算〉
+superstition,[名] 迷信
+storage,[名] 貯蔵
+shelter,[名] 避難（所）
+garment,[名] 衣類
+cabinet,[名] 戸棚
+recipe,[名] レシピ
+brochure,[名] パンフレット
+shipping,[名] （商品の）発送
+fetch,[他] （主に〈英〉）～を取って来る
+distribute,[他] ～を分配する
+statue,[名] 像
+sculpture,[名] 彫刻
+carve,[他] ～を彫る
+myth,[名] （俗説という意味での）神話
+craft,[名] 工芸（品）
+journal,[名] 雑誌
+heaven,[名] 天国
+funeral,[名] 葬式
+soul,[名] 魂
+priest,[名] 神父
+faith,[名] （主に宗教上の）信仰
+sacred,[形] 神聖な
+divine,[形] 神の
+context,[名] 文脈
+singular,[形] 単数の
+command,[名] 言語を操る力
+instance,[名] 例
+narrative,[名] 語り
+dialogue,[名] （本，劇，映画の中の）会話
+usage,[名] 語法
+accent,[名] 訛
+temper,[名] 気性
+affection,[名] 愛情
+enthusiasm,[名] 情熱
+passion,[名] 情熱
+rage,[名] 激怒
+sorrow,[名] 悲しみ
+incredible,[形] 信じられない
+chuckle,[自] くすくす笑う
+tease,[他] ～をからかう
+dare,[他] （to do）思い切って～する
+willing,[形] （be － to do）嫌がらずに～する
+scream,[自] 悲鳴を上げる
+soothe,[他] （人）をなだめる
+tempt,[他] ～を誘惑する
+scold,[他] ～を𠮟る
+oppress,[他] ～を圧迫する
+threaten,[他] （to do）～すると脅す
+delight,[他] ～を喜ばせる
+astonish,[他] ～を（とても）驚かせる
+mourn,[他] ～を嘆く
+offend,[他] （人，物が）～を怒らせる
+depress,[他] ～を憂うつにさせる
+sacrifice,[他] ～を犠牲にする
+impulse,[名] 衝動
+curse,[名] 災いの元
+factor,[名] 要因
+stem,[自] （from ～）（～が）原因である
+trigger,[他] ～のきっかけになる
+consequence,[名] 結果
+process,[名] 過程
+resort,[自] （to ～）（～に）訴える
+formula,[名] 方法
+procedure,[名] 手続き
+extraordinary,[形] 並外れた
+absolute,[形] 絶対的な
+overwhelming,[形] 圧倒的な
+altogether,[副] 完全に
+entire,[形] すべての
+tremendous,[形] すさまじい
+sheer,[形] （数量やサイズを強調して）とてつもない～の
+partial,[形] 部分的な
+barely,[副] かろうじて
+slight,[形] わずかな
+approximately,[副] （数量が）おおよそ
+frequently,[副] 頻繁に
+apparently,[副] どうやら～らしい
+merely,[副] （主に名詞の前で）～にすぎない
+nevertheless,[副] それにもかかわらず
+somehow,[副] 何らかの方法で
+thus,[副] それゆえ（に）
+pretty,[副] まあまあ
+despite,[前] ～にもかかわらず
+assert,[他] ～と断定する
+defy,[他] ～に逆らう
+condemn,[他] ～を非難する
+contradict,[他] ～と矛盾する
+cite,[他] ～を引き合いに出す
+illustrate,[他] （例で）～を説明する
+articulate,[他] （考えなど）をはっきり述べる
+advocate,[名] 提唱者
+breakthrough,[名] 飛躍的進歩
+evolution,[名] 進化
+innovation,[名] 革新
+probe,[名] 探査機
+fluid,[名] 流体
+particle,[名] 粒子
+gravity,[名] 重力
+friction,[名] 摩擦
+mutation,[名] 突然変異
+heredity,[名] 遺伝
+hypothesis,[名] 仮説
+specimen,[名] 標本
+microscope,[名] 顕微鏡
+realm,[名] 領域
+acid,[形] 酸性の
+toxic,[形] 有害な
+poison,[名] 毒
+strive,[自] 努力する
+endeavor,[名] 努力
+manufacture,[他] ～を製造する
+yield,[他] ～を産出する
+duplicate,[他] ～を複製する
+assemble,[他] ～を組み立てる
+mold,[他] ～を（型に入れて）作る
+coin,[他] ～を作り出す
+physician,[名] 〈米〉医師
+veterinarian,[名] 獣医
+therapy,[名] 治療（法）
+injection,[名] 注射
+dose,[名] （1回分の）服用量
+sanitation,[名] 衛生
+germ,[名] 細菌
+tumor,[名] 腫瘍〈可算〉
+agony,[名] 苦痛
+disorder,[名] （心身の）不調
+plague,[名] （大規模な）疫病
+epidemic,[名] （大）流行
+diagnosis,[名] 診断
+mortality,[名] （－ rate）死亡率
+chronic,[形] 慢性の
+immune,[形] 免疫の（ある）
+choke,[自] （on ～）（～で）息が詰まる
+paralyze,[他] ～を麻痺させる
+infect,[他] （人，動物，地域）に感染させる
+prescribe,[他] （薬など）を処方する
+digest,[他] ～を消化する
+weary,[形] （極度に）疲れている
+nourish,[他] ～に栄養を与える
+flesh,[名] （人，動物の皮，骨に対する）肉
+kidney,[名] 腎臓
+posture,[名] 姿勢
+limb,[名] 手足（の1 本）
+erect,[形] 直立した
+compensate,[他] （A for B） （A）に（B を）補償する
+flourish,[自] 栄える
+abuse,[名] 虐待
+bias,[名] 偏見
+prestige,[名] 名声
+privilege,[名] 特権
+feat,[名] 偉業
+dignity,[名] 威厳
+virtue,[名] 美徳
+aristocracy,[名] 貴族（階級
+rebel,[名] 反逆者
+scheme,[名] 〈英〉計画
+convention,[名] 会議
+conference,[名] （on ～）（～に関する）会議
+consent,[名] 合意
+initiative,[名] 新構想
+province,[名] （カナダなどの）州
+colony,[名] 植民地
+frontier,[名] 辺境
+tribe,[名] 部族
+primitive,[形] 原始的な
+ethnic,[形] 民族の
+anonymous,[形] 匿名の
+coverage,[名] 報道
+obligation,[名] （社会に対する）責務
+norm,[名] ふつうのこと
+patent,[名] 特許（権）
+entitled,[形] （to ～）（～の）権利がある
+donate,[他] ～を寄付する
+conform,[自] （to ～）（～に）合わせる
+comply,[自] （with ～）（～に）従う
+legislation,[名] （集合的に）法律〈不可算〉
+testimony,[名] （法廷などでの）証言
+jury,[名] 陪審（員団）
+legitimate,[形] 正当な
+enforce,[他] ～を施行する
+regime,[名] 政権
+bureaucracy,[名] 官僚制度
+corruption,[名] 腐敗
+tyranny,[名] 圧政
+sanction,[名] （－s）制裁
+census,[名] 国勢調査
+candidate,[名] （for ～）（～の）候補（者）
+senator,[名] 〈米〉（しばしばS－）上院議員
+ambassador,[名] 大使
+diplomat,[名] 外交官
+refugee,[名] 難民
+territory,[名] 領土
+ally,[名] 同盟国
+federal,[形] 連邦の
+feudal,[形] （主に欧州の）封建制の
+communist,[形] 共産主義（者）の
+estate,[名] （全）財産
+asset,[名] 財産
+revenue,[名] （国などの）歳入
+deficit,[名] （会社，国の）赤字
+commerce,[名] 商業
+output,[名] 生産高
+subsidy,[名] 補助金
+monopoly,[名] 独占（権
+transaction,[名] 取り引き
+corporation,[名] 企業
+enterprise,[名] 企業
+venture,[名] （ベンチャー）事業
+headquarters,[名] 本社
+personnel,[名] （官庁，会社などの）全職員〈複数扱い〉
+expertise,[名] 専門的知識
+quota,[名] ノルマ
+warehouse,[名] 倉庫
+toil,[自] （長時間）骨折って働く
+undertake,[他] （仕事など）を引き受ける
+merge,[自] 合併する
+comprise,[他] ～から成る
+component,[名] 構成要素
+framework,[名] 枠組
+prototype,[名] （of［for］～）（～の）原型
+dimension,[名] （問題などの）側面
+margin,[名] 余白
+relevant,[形] 関連のある
+compatible,[形] （with ～）（～と）適合する
+correspond,[自] （to［with］～）（～と）一致する
+identical,[形] 同一の
+equivalent,[形] 等しい
+random,[形] 無作為の
+warrior,[名] 戦士
+assault,[名] 襲撃
+troop,[名] （－s）軍隊
+torture,[名] 拷問
+dispute,[名] 論争
+riot,[名] 暴動
+persecution,[名] 迫害
+dominate,[他] ～を支配する
+slaughter,[他] ～を虐殺する
+suppress,[他] （反乱，暴動）を鎮圧する
+surrender,[自] （to ～）（～に）降伏する
+contend,[自] （with ～）（～と）戦う
+hostile,[形] 敵意のある
+wreck,[名] （乗り物，家の）残骸
+toll,[名] 犠牲［死傷］者（数）
+disrupt,[他] （活動の進行など）をかき乱す
+interfere,[自] （with ～）（～を）邪魔する
+confront,[他] （困難などが人）に立ちふさがる
+hinder,[他] ～を妨げる
+explode,[自] 爆発する
+collide,[自] （with ～）（～と）衝突する
+nephew,[名] 甥
+spouse,[名] 配偶者
+heir,[名] 相続人
+folk,[名] 民族
+peer,[名] （－s）同等の人
+proceed,[自] （順を追って）進む
+navigate,[自] （旅などで）進路を決める
+roam,[自] 歩き回る
+flee,[自] 逃亡する
+retreat,[自] 退く
+crawl,[自] 這って進む
+drift,[自] 漂う
+alter,[他] ～を変える
+convert,[他] （A into B）（A）を（B に）転換する
+shrink,[自] 縮む
+wither,[自] しおれる
+transition,[名] 移り変わり
+distortion,[名] 歪めること
+enhance,[他] ～を向上させる
+reinforce,[他] ～を補強する
+foster,[他] （才能など）を育成する
+breakdown,[名] 崩壊
+collapse,[自] 崩壊する
+render,[他] （SVOC）（O）を（C）にする
+impair,[他] （人間の機能など）を低下させる
+deteriorate,[自] 悪化する
+undermine,[他] ～を弱める
+tackle,[他] ～に取り組む
+disposal,[名] （at one’s －）～を自由にする
+confine,[他] ～を閉じ込める
+designate,[他] （通例，受け身で）～を指定する
+regulate,[他] （主に規則によって）～を規制する
+prohibit,[他] ～を禁じる
+refrain,[自] （from ～）（～を）控える
+curb,[他] ～を抑制する
+restrain,[他] ～を抑制する
+halt,[他] ～を止める
+animate,[他] ～を活気づける
+spur,[他] ～を駆り立てる
+urge,[他] ～をせき立てる
+lure,[他] ～を誘い込む
+stimulate,[他] ～を刺激する
+compel,[他] （A to do）（A）に（～することを）強制する
+dictate,[他] ～を書き取らせる
+blur,[他] ～をぼやかす
+divert,[他] （川など）の方向を変える
+reverse,[他] ～を逆転する
+supplement,[他] （栄養，収入など）を補う
+pose,[他] ～をもたらす
+stroll,[自] 散策する
+shrug,[他] （肩）をすくめる
+sniff,[自] （くんくん）臭いをかぐ
+embrace,[他] ～を抱擁する
+betray,[他] ～を裏切る
+deceive,[他] ～をだます
+bully,[他] ～をいじめる
+squeeze,[他] （果汁など）を搾る
+insert,[他] ～を差し込む
+detach,[他] （A from B） （A）を（B から）切り離す
+withdraw,[他] ～を引っ込める
+withstanding,[他] ～に耐える
+exert,[他] （力，影響力など）を働かせる
+compile,[他] ～をまとめる
+browse,[自] 拾い読みする
+manipulate,[他] ～を操作する
+implement,[他] （契約，計画など）を実行する
+execute,[他] ～を遂行する
+host,[他] （大会など）を主催する
+mount,[他] ～を据え付ける
+discharge,[他] ～を排出する
+drain,[他] ～の水を抜く
+soak,[他] ～を浸す
+suspend,[他] ～をつるす
+extract,[他] ～を取り出す
+summon,[他] ～を呼ぶ
+embark,[自] （on ～）（～に）着手する
+thrust,[他] ～を強く押しつける
+penetrate,[他] ～に入り込む
+intrude,[自] （on～）（～に）立ち入る
+evade,[他] ～を逃れる
+utilize,[他] ～を利用する
+spin,[自] ぐるぐる回る
+plunge,[自] （into ～）（～に）突っ込む
+rattle,[自] ガタガタ鳴る
+vanish,[自] 消える
+cease,[他] （to do［doing］）～しなくなる
+haste,[名] 急ぐこと〈不可算〉
+conceal,[他] ～を隠す
+disguise,[他] ～を（偽装して）隠す
+coincide,[自] （with ～）（～と）同時に起きる
+prevail,[自] （考え，習慣などが）普及している
+sustain,[他] （生命など）を維持する
+linger,[自] （いつまでも）残る
+revive,[自] 生き返る
+resume,[他] ～を再開する
+inspect,[他] ～を検査する
+investigate,[他] （研究班などが）～を調査する
+detect,[他] ～を探知する
+discern,[他] ～を見分ける
+expedition,[名] （研究・探求・戦争目的の）探検
+enroll,[自] （in ～）（～に）入学する
+discipline,[他] ～をしつける
+cram,[自] 詰め込み勉強をする
+faculty,[名] （生まれ持った）能力
+tuition,[名] 〈米〉授業料
+diploma,[名] 〈米〉卒業証書
+mentor,[他] ～を指導する
+ethic,[名] （－s）（社会や職業上の）倫理（観）
+astronomy,[名] 天文学
+archaeologist,[名] 考古学者
+anthropologist,[名] （文化）人類学者
+perceive,[他] （A as B）（A）を（B だと）認識する
+grasp,[他] ～を理解する
+conceive,[他] ～を思い浮かべる
+anticipate,[他] ～を予想する
+foresee,[他] ～を予知する
+speculate,[自] 推測する
+infer,[他] （A from B） （B からA）を推測する
+deduce,[他] （A from B） （B からA）を推定する
+ponder,[他] ～を熟考する
+contemplate,[他] ～を熟考する
+assure,[他] ～に保証する
+assess,[他] ～を評価する
+evaluate,[他] ～を（正しく）評価する
+verify,[他] （事実かどうか）を確かめる
+compromise,[自] （with ～）（～と）妥協する
+reconcile,[他] （A with B）（A）を（B と）調和させる
+alert,[形] 油断のない
+stereotype,[名] 固定観念
+perspective,[名] （経験などで得られる）視点〈可算〉
+prospect,[名] 見通し
+vow,[名] 誓い
+intuition,[名] 直観
+illusion,[名] 幻想
+criterion,[名] 基準
+tolerate,[他] ～を大目に見る
+overlook,[他] ～を（うっかり）見落とす
+grain,[名] 穀物
+drought,[名] 干ばつ
+irrigation,[名] 灌漑
+spectacle,[名] （きわめて印象的な）光景
+altitude,[名] 標高
+catastrophe,[名] 大災害
+decay,[名] 腐敗
+erosion,[名] 侵食
+flame,[名] 炎
+galaxy,[名] 銀河
+meteor,[名] 流星
+chill,[名] 寒気
+meadow,[名] 草地
+exploit,[他] （自然の力など）を利用する
+contaminate,[他] ～を汚染する
+erupt,[自] （火山が）噴火する
+evaporate,[自] 蒸発する
+fertile,[形] 肥沃な
+roar,[自] ほえる
+inhabit,[他] ～に生息している
+nurture,[他] ～を育てる
+owl,[名] フクロウ
+instinct,[名] 本能
+prey,[名] 餌食
+timber,[名] （主に〈英〉）材木
+fabric,[名] 布地
+textile,[名] 織物
+weave,[他] ～を織る
+competent,[形] 有能な
+optimistic,[形] 楽観的な
+patriotic,[形] 愛国的な
+naughty,[形] いたずらな
+vigorous,[形] （人，活動が）精力的な
+solitary,[形] （人が）孤高の
+vulgar,[形] （人，行動が）品がない
+skeptical,[形] 懐疑的な
+haunt,[他] （亡霊，考えなどが）～につきまとう
+obsessed,[形] （with［by］ ～）（～に）取りつかれて
+intent,[形] （on ～）（～に）没頭した
+indulge,[自] （in ～）（～に）ふける
+cling,[自] （to ～）（～に）固執する
+flaw,[名] 欠陥
+defect,[名] 欠陥
+trait,[名] 特性
+analogy,[名] 類似点
+parallel,[名] 類似（物）
+crucial,[形] 重大な
+primary,[形] 主な
+integral,[形] 不可欠な
+vital,[形] 不可欠な
+profound,[形] 深い
+grim,[形] （状況などが）厳しい
+fierce,[形] （競争，嵐などが）激しい
+harsh,[形] 厳しい
+savage,[形] （とても）容赦ない
+acute,[形] 深刻な
+ambiguous,[形] 曖昧な
+obscure,[形] ぼやけた
+misleading,[形] 誤解を招く
+straightforward,[形] （方法などが）わかりやすい
+explicit,[形] （発言や文章などが）明確な
+sophisticated,[形] （機械，システムが）高度な
+ingenious,[形] 独創的な
+decent,[形] まともな
+thrive,[自] （会社などが）好調である
+wit,[名] 機知
+affluent,[形] 裕福な
+elaborate,[形] 手の込んだ
+prompt,[形] 迅速な
+swift,[形] 素早い
+mighty,[形] 強力な
+renowned,[形] 有名な
+dim,[形] 薄暗い
+gloomy,[形] 薄暗い
+barren,[形] 不毛な
+idle,[形] （仕事がなく）何もしていない
+tiresome,[形] 退屈な
+static,[形] 静的な
+clumsy,[形] 無器用な
+ignorant,[形] 無知の
+reckless,[形] 無謀な
+arbitrary,[形] 独断的な
+foul,[形] （味，臭いなどが）不快な
+shabby,[形] みすぼらしい
+monotonous,[形] 単調な
+crude,[形] 粗末な
+fragile,[形] 壊れやすい
+vulnerable,[形] 傷つきやすい
+rust,[名] さび
+plight,[名] 窮状
+conventional,[形] 従来の
+innate,[形] （才能などが）先天的な
+exotic,[形] （動［植］物が）外来の
+tame,[形] 飼い慣らされた
+solemn,[形] （場所，祝祭が）厳粛な
+manifest,[形] 明らかな
+dense,[形] 密集した
+superficial,[形] 表面的な
+transparent,[形] 透明な
+consistent,[形] （with ～）矛盾のない
+coherent,[形] 一貫している
+universal,[形] 普遍的な
+upright,[副] 直立して
+underlying,[形] 根底にある
+spontaneous,[形] 自然発生的な
+mock,[形] 模擬の
+liable,[形] （to do）～しがちだ
+converse,[名] 正反対
+preliminary,[形] 予備的な
+version,[名] （個人的な）解釈
+indigenous,[形] （動［植］物，民族が）固有の
+decline,[自] 減る
+multiply,[他] ～を増やす
+soar,[自] （価格，温度が）急上昇する
+accumulate,[他] ～を蓄積する
+exceed,[他] ～を越える
+abundant,[形] 豊富な
+ample,[形] 豊富な
+gross,[形] 総計の
+infinite,[形] 無限の
+sole,[形] 唯一の
+heap,[名] 山
+fraction,[名] 少量
+simultaneous,[形] 同時の
+medieval,[形] 中世の
+decade,[名] 10年
+dawn,[名] 夜明け
+span,[名] （継続した）期間
+expire,[自] 期限が切れる
+postpone,[他] ～を延期する
+equip,[他] ～を装備させる
+transmit,[他] ～を送る
+endow,[他] ～を授ける
+inherit,[他] ～を受け継ぐ
+retrieve,[他] ～を回収する
+displace,[他] ～に取って代わる
+bond,[名] きずな
+ornament,[名] （小さな）飾り
+certificate,[名] 証明書
+accommodation,[名] （〈米〉－s）宿泊施設
+intersection,[名] 交差点
+pavement,[名] （主に〈英〉）歩道
+pedestrian,[名] 歩行者
+excursion,[名] 小旅行
+itinerary,[名] 旅程（表）
+token,[名] （as a － of）（～の）しるし（として）
+detergent,[名] 洗剤
+purchase,[他] ～を購入する
+dwell,[自] 住む
+juvenile,[形] 青少年の
+adolescent,[名] 思春期の若者
+initial,[形] 最初の
+precede,[他] ～に先行する
+phase,[名] 段階
+priority,[名] 優先（事項）
+premise,[名] 前提
+legend,[名] 伝説
+masterpiece,[名] 傑作
+ritual,[名] （宗教的）儀式
+worship,[名] 崇拝
+advent,[名] 到来
+swear,[自] 誓う
+confess,[自] （to ～）（～を）白状する
+verbal,[形] 言葉による
+oral,[形] 口述の
+eloquent,[形] 雄弁な
+linguistic,[形] 言語の
+plot,[名] （小説，演劇などの）筋
+draft,[名] 下書き
+statement,[名] 述べたこと
+paradox,[名] 逆説
+slang,[名] （集合的に）俗語
+riddle,[名] なぞなぞ
+clarify,[他] ～を明らかにする
+exhibit,[他] ～を展示する
+portray,[他] ～を描く
+attribute,[他] （A to B） （A）を（B）のせいだとする
+console,[他] ～を慰める
+arouse,[他] ～を呼び起こす
+distract,[他] （注意，意識など）をそらす
+plead,[自] （with ～）（～に）懇願する
+yearn,[自] 切望する
+long,[自] （for ～）（～を）切望する
+adore,[他] ～を熱愛している
+utter,[他] （叫び声など）を発する
+exclaim,[自] （驚き，怒りなどで）叫ぶ
+lament,[他] ～を深く悲しむ
+shed,[他] （涙など）を流す
+resent,[他] ～に憤慨する
+dread,[他] ～を恐れる
+startle,[他] ～を驚かせる
+thrill,[他] ～をぞくぞく［わくわく］させる
+humiliate,[他] ～に恥をかかせる
+blush,[自] 赤面する
+frown,[自] （on ～）（～に）眉をひそめる
+dismay,[他] ～を狼狽させる
+bewilder,[他] （通例，受け身）～を当惑させる
+perplex,[他] ～を困惑させる
+disgust,[他] ～に嫌悪を抱かせる
+despise,[他] ～を軽蔑する
+furious,[形] 激怒した
+intimate,[形] 親密な
+intriguing,[形] 興味深い
+conscience,[名] 良心
+self-esteem,[名] 自尊心
+mercy,[名] 慈悲
+aspiration,[名] 熱望
+grief,[名] （人の死などに対する）深い悲しみ
+distress,[名] 苦しみ
+apprehension,[名] 不安
+melancholy,[名] 憂うつ
+contempt,[名] 軽蔑
+insult,[名] 侮辱
+nuisance,[名] 迷惑（になるもの）
+menace,[名] （to ～）（～にとっての）厄介なもの［人］
+verge,[名] 瀬戸際
+incentive,[名] 励み
+outcome,[名] 結果
+thorough,[形] 完全な
+adequate,[形] 十分な
+overall,[形] 全体的な
+ultimate,[形] 究極の
+genuine,[形] （感情が）心からの
+radical,[形] 根本的な
+drastic,[形] 抜本的な
+trivial,[形] ささいな
+virtually,[副] 事実上
+abruptly,[副] 不意に
+deliberately,[副] 故意に
+hence,[副] だから
+namely,[副] すなわち
+whereas,[接] ～だが一方`; // 例としてさらに単語を追加
+        // ★★★★★ここまで変更★★★★★
+
+        /**
+         * CSVテキストを解析し、単語オブジェクトの配列を生成する
+         * @param {string} csvText - CSV形式の文字列
+         * @returns {Array<Object>} 単語オブジェクトの配列
+         */
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const words = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line) {
+                    const commaIndex = line.indexOf(',');
+                    if (commaIndex > 0) {
+                        const english = line.substring(0, commaIndex).trim();
+                        const japanese = line.substring(commaIndex + 1).trim();
+                        words.push({
+                            id: i + 1, // 連番ID
+                            english,
+                            japanese,
+                            // wordChecksに既に保存されているチェック状態があればそれを適用
+                            checked: wordChecks[english] !== undefined ? wordChecks[english] : false 
+                        });
+                    }
+                }
+            }
+            return words;
+        }
+        
+        /**
+         * テストを開始する
+         */
+        function startTest() {
+            // CSVデータはEMBEDDED_CSV_DATAから取得するため、UIからの入力は不要
+            const csvText = EMBEDDED_CSV_DATA; 
+
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            // メッセージをクリア
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // EMBEDDED_CSV_DATAが空であることは想定しないが、念のためチェック
+            if (!csvText.trim()) {
+                errorDiv.textContent = '単語データが見つかりません。コード内のCSVデータを確認してください。';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            try {
+                // EMBEDDED_CSV_DATAから改めてvocabularyをパースし、最新のwordChecksを適用
+                vocabulary = parseCSV(csvText); 
+                
+                if (vocabulary.length === 0) {
+                    errorDiv.textContent = '有効な単語データが見つかりません';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
+                // 範囲設定の検証
+                const rangeStart = parseInt(document.getElementById('rangeStart').value);
+                const rangeEnd = parseInt(document.getElementById('rangeEnd').value);
+                
+                if (rangeStart < 1 || rangeEnd < rangeStart || rangeEnd > vocabulary.length) {
+                    errorDiv.textContent = `範囲は1～${vocabulary.length}の間で設定してください`;
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
+                // 問題数の検証
+                const questionCountSelect = document.getElementById('questionCount');
+                let questionCount = parseInt(questionCountSelect.value);
+                
+                if (questionCountSelect.value === 'custom') {
+                    questionCount = parseInt(document.getElementById('customCount').value);
+                    if (!questionCount || questionCount < 1) {
+                        errorDiv.textContent = '問題数を正しく入力してください';
+                        errorDiv.style.display = 'block';
+                        return;
+                    }
+                }
+                
+                // テスト用の単語を準備（指定された範囲の単語を抽出）
+                let testWords = vocabulary.slice(rangeStart - 1, rangeEnd);
+                
+                // チェックフィルタを適用
+                const checkFilter = document.getElementById('checkFilter').value;
+                if (checkFilter === 'checked') {
+                    testWords = testWords.filter(word => word.checked);
+                } else if (checkFilter === 'unchecked') {
+                    testWords = testWords.filter(word => !word.checked);
+                }
+                
+                if (testWords.length === 0) {
+                    errorDiv.textContent = '指定された条件に該当する単語がありません';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
+                // 問題数を調整（テスト単語数を超えないように）
+                questionCount = Math.min(questionCount, testWords.length);
+                
+                // 出題順の設定
+                const questionOrder = document.getElementById('questionOrder').value;
+                if (questionOrder === 'random') {
+                    testWords = shuffleArray([...testWords]); // シャッフルは元の配列を破壊しないようにコピーを渡す
+                }
+                
+                currentTest = testWords.slice(0, questionCount); // 実際に出題する単語リスト
+                currentQuestionIndex = 0;
+                testResults = []; // テスト結果をリセット
+                
+                successDiv.textContent = `${currentTest.length}問のテストを開始します`;
+                successDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    showScreen('testScreen');
+                    showQuestion();
+                }, 1000); // 成功メッセージ表示後、1秒でテスト画面へ
+                
+            } catch (error) {
+                console.error("テスト開始エラー:", error);
+                errorDiv.textContent = 'テストの準備中にエラーが発生しました';
+                errorDiv.style.display = 'block';
+            }
+        }
+        
+        /**
+         * 配列をシャッフルする（Fisher-Yatesアルゴリズム）
+         * @param {Array<any>} array - シャッフルする配列
+         * @returns {Array<any>} シャッフルされた新しい配列
+         */
+        function shuffleArray(array) {
+            const newArray = [...array]; // 元の配列を破壊しないようにコピーを作成
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        /**
+         * 現在の問題を表示する
+         */
+        function showQuestion() {
+            if (currentQuestionIndex >= currentTest.length) {
+                showResults(); // 全問題終了したら結果を表示
+                return;
+            }
+            
+            const word = currentTest[currentQuestionIndex];
+            document.getElementById('currentWord').textContent = word.english;
+            document.getElementById('answerDisplay').classList.remove('show'); // 回答を非表示
+            document.getElementById('showAnswerBtn').style.display = 'block'; // 回答表示ボタンを表示
+            document.getElementById('judgmentButtons').style.display = 'none'; // 正誤判定ボタンを非表示
+            document.getElementById('wordCheckbox').checked = word.checked; // 単語のチェック状態を反映
+            
+            showingAnswer = false; // 回答表示フラグをリセット
+            updateProgress(); // 進捗を更新
+        }
+        
+        /**
+         * 回答を表示する
+         */
+        function showAnswer() {
+            const word = currentTest[currentQuestionIndex];
+            document.getElementById('answerDisplay').textContent = word.japanese;
+            document.getElementById('answerDisplay').classList.add('show'); // 回答を表示
+            document.getElementById('showAnswerBtn').style.display = 'none'; // 回答表示ボタンを非表示
+            document.getElementById('judgmentButtons').style.display = 'block'; // 正誤判定ボタンを表示
+            showingAnswer = true; // 回答表示フラグを設定
+        }
+        
+        /**
+         * 現在の問題を正解としてマークし、次の問題へ進む
+         */
+        function markCorrect() {
+            const word = currentTest[currentQuestionIndex];
+            testResults.push({
+                word: word,
+                correct: true // 正解
+            });
+            nextQuestion();
+        }
+        
+        /**
+         * 現在の問題を不正解としてマークし、次の問題へ進む
+         */
+        function markIncorrect() {
+            const word = currentTest[currentQuestionIndex];
+            testResults.push({
+                word: word,
+                correct: false // 不正解
+            });
+            nextQuestion();
+        }
+        
+        /**
+         * 次の問題へ進む、またはテストを終了する
+         */
+        function nextQuestion() {
+            // チェックボックスの状態をwordChecksに保存
+            const word = currentTest[currentQuestionIndex];
+            const checked = document.getElementById('wordCheckbox').checked;
+            word.checked = checked; // currentTest内の単語オブジェクトも更新
+            wordChecks[word.english] = checked; // グローバルなwordChecksオブジェクトを更新
+            
+            currentQuestionIndex++;
+            showQuestion(); // 次の問題を表示
+        }
+        
+        /**
+         * プログレスバーと進捗テキストを更新する
+         */
+        function updateProgress() {
+            const progress = (currentQuestionIndex / currentTest.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = 
+                `${currentQuestionIndex + 1} / ${currentTest.length}`;
+        }
+        
+        /**
+         * テスト結果画面を表示する
+         */
+        function showResults() {
+            const correctCount = testResults.filter(r => r.correct).length;
+            const totalCount = testResults.length;
+            const percentage = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+            
+            document.getElementById('resultSummary').textContent = 
+                `${correctCount} / ${totalCount} 問正解 (${percentage}%)`;
+            
+            document.getElementById('progressFill').style.width = '100%';
+            document.getElementById('progressText').textContent = 'テスト完了';
+            
+            showScreen('resultScreen');
+            showAllResults(); // 結果一覧を自動表示
+        }
+        
+        /**
+         * 全てのテスト結果をリスト表示する
+         */
+        function showAllResults() {
+            const resultList = document.getElementById('resultList');
+            resultList.innerHTML = ''; // 既存の内容をクリア
+            
+            testResults.forEach((result, index) => {
+                const div = document.createElement('div');
+                div.className = `result-item ${result.correct ? 'correct' : 'incorrect'}`;
+                div.innerHTML = `
+                    <span><strong>${result.word.english}</strong> - ${result.word.japanese}</span>
+                    <span>${result.correct ? '✓' : '✗'}</span>
+                `;
+                resultList.appendChild(div);
+            });
+        }
+        
+        /**
+         * テストで間違えた問題にチェックを付ける
+         */
+        function checkIncorrectWords() {
+            testResults.forEach(result => {
+                if (!result.correct) {
+                    // vocabulary内の該当単語のcheckedプロパティとwordChecksを更新
+                    const targetWord = vocabulary.find(w => w.english === result.word.english);
+                    if (targetWord) {
+                        targetWord.checked = true;
+                        wordChecks[targetWord.english] = true;
+                    }
+                }
+            });
+            alert('間違えた問題にチェックをつけました');
+        }
+        
+        /**
+         * 間違えた問題のみで再テストを開始する
+         */
+        function retryIncorrect() {
+            const incorrectWords = testResults.filter(r => !r.correct).map(r => r.word);
+            
+            if (incorrectWords.length === 0) {
+                alert('間違えた問題がありません');
+                return;
+            }
+            
+            currentTest = incorrectWords;
+            currentQuestionIndex = 0;
+            testResults = []; // テスト結果をリセット
+            
+            showScreen('testScreen');
+            showQuestion();
+        }
+        
+        /**
+         * ★★★★★ここから変更★★★★★
+         * 音声を再生する（Web Speech APIを使用）
+         * 日本語ボイスではなく、英語の音声を選択するように改善
+         */
+        function playAudio() {
+            const word = currentTest[currentQuestionIndex];
+            if ('speechSynthesis' in window && word && word.english) {
+                const utterance = new SpeechSynthesisUtterance(word.english);
+                utterance.rate = 0.8; // 再生速度
+
+                // 利用可能な音声リストを取得
+                // NOTE: getVoices()は初回呼び出し時やonvoiceschangedイベント後にデータがセットされることがあります。
+                // 確実に音声を取得するため、常にgetVoices()を呼び出します。
+                const voices = speechSynthesis.getVoices();
+                
+                let selectedVoice = null;
+                // 'en-US'言語で、かつ「Japanese」や「Google 日本語」を含まない音声を探す
+                selectedVoice = voices.find(voice => 
+                    voice.lang === 'en-US' && 
+                    !voice.name.includes('Japanese') && 
+                    !voice.name.includes('Google 日本語') &&
+                    !voice.name.includes('Katkana') // 万が一のためにカタカナっぽい名前も避ける
+                );
+
+                if (!selectedVoice) {
+                    // 上記の条件に合う音声が見つからない場合、純粋な'en-US'の音声を探す
+                    selectedVoice = voices.find(voice => voice.lang === 'en-US');
+                }
+
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                    utterance.lang = selectedVoice.lang; // 選択された音声の言語を設定
+                } else {
+                    // 'en-US'の音声が全く見つからない場合、デフォルトで'en-US'を設定
+                    // この場合、システムのデフォルト設定に依存するため、アクセントが残る可能性あり
+                    utterance.lang = 'en-US'; 
+                    console.warn('英語の音声が見つかりませんでした。デフォルトのen-US設定を使用します。');
+                }
+                
+                speechSynthesis.speak(utterance);
+            } else {
+                // alert()の代わりにカスタムモーダルを使用することを推奨しますが、今回は既存のまま
+                alert('音声機能はサポートされていません、または単語が選択されていません。');
+            }
+        }
+        // ★★★★★ここまで変更★★★★★
+        
+        /**
+         * 画面を切り替える
+         * @param {string} screenId - 表示する画面のID
+         */
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        /**
+         * 設定画面に戻る
+         */
+        function goToSetup() {
+            showScreen('setupScreen');
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = '準備完了';
+        }
+        
+        /**
+         * ★★★★★データ復元機能: 現在のチェック状態をシードとしてエクスポート★★★★★
+         * シードは、wordChecks（各単語のチェック状態）をBase64エンコードしたJSON文字列です。
+         * これをコピーすることで、ブラウザを閉じても復元できるようになります。
+         */
+        function exportSeed() {
+            const seedData = {
+                wordChecks: wordChecks, // チェック状態のみを保存
+                timestamp: new Date().toISOString() // 保存日時
+            };
+            
+            const seedString = btoa(JSON.stringify(seedData)); // JSONをBase64エンコード
+            document.getElementById('seedInput').value = seedString;
+            // alert()の代わりにカスタムモーダルを使用することを推奨しますが、今回は既存のまま
+            alert('現在の状態をエクスポートしました！シード欄の内容をコピーして保存してください。');
+        }
+        
+        /**
+         * ★★★★★データ復元機能: シードをインポートしてチェック状態を復元★★★★★
+         * 入力されたシード（Base64エンコードされたJSON文字列）を解析し、
+         * 保存されていたwordChecksを復元します。
+         */
+        function importSeed() {
+            const seedString = document.getElementById('seedInput').value.trim();
+            
+            if (!seedString) {
+                // alert()の代わりにカスタムモーダルを使用することを推奨しますが、今回は既存のまま
+                alert('シードデータを入力してください');
+                return;
+            }
+            
+            try {
+                const seedData = JSON.parse(atob(seedString)); // Base64デコードしてJSONをパース
+                
+                if (seedData && seedData.wordChecks) {
+                    wordChecks = seedData.wordChecks; // wordChecksを復元
+                    
+                    // EMBEDDED_CSV_DATAを再パースし、復元されたwordChecksを適用してvocabularyを更新
+                    vocabulary = parseCSV(EMBEDDED_CSV_DATA); 
+                    
+                    // 範囲設定のUIを更新
+                    if (vocabulary.length > 0) {
+                        document.getElementById('rangeEnd').value = vocabulary.length;
+                        document.getElementById('rangeEnd').max = vocabulary.length;
+                        document.getElementById('rangeStart').max = vocabulary.length;
+                    } else {
+                        document.getElementById('rangeEnd').value = 1; // 単語が0なら1にリセット
+                        document.getElementById('rangeEnd').max = 1;
+                        document.getElementById('rangeStart').max = 1;
+                    }
+                    
+                    // alert()の代わりにカスタムモーダルを使用することを推奨しますが、今回は既存のまま
+                    alert('データを正常にインポートしました！チェック状態が復元されました。');
+                } else {
+                    // alert()の代わりにカスタムモーダルを使用することを推奨しますが、今回は既存のまま
+                    alert('無効なシードデータです。形式を確認してください。');
+                }
+            } catch (error) {
+                console.error("シードデータの解析失敗:", error);
+                // alert()の代わりにカスタムモーダルを使用することを推奨しますが、今回は既存のまま
+                alert('シードデータの解析に失敗しました。データが壊れている可能性があります。');
+            }
+        }
+        
+        /**
+         * 初期化処理
+         * DOMが完全にロードされた後に実行される
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            // 問題数選択の処理（カスタム入力の表示/非表示）
+            document.getElementById('questionCount').addEventListener('change', function() {
+                const customInput = document.getElementById('customCount');
+                if (this.value === 'custom') {
+                    customInput.style.display = 'block';
+                    customInput.focus();
+                } else {
+                    customInput.style.display = 'none';
+                }
+            });
+            
+            // ★★★★★初期化処理の変更★★★★★
+            // ページロード時にEMBEDDED_CSV_DATAから単語リストを初期化し、UIを更新
+            // この処理は、ユーザーがアプリを開いたときに最初に行われます。
+            vocabulary = parseCSV(EMBEDDED_CSV_DATA); 
+            if (vocabulary.length > 0) {
+                document.getElementById('rangeEnd').value = vocabulary.length;
+                document.getElementById('rangeEnd').max = vocabulary.length;
+                document.getElementById('rangeStart').max = vocabulary.length;
+            }
+            // ★★★★★ここまで変更★★★★★
+        });
+    </script>
+</body>
+</html>
