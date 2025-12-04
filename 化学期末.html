@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>化学 共通テスト/演習問題クイズ</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f5f7fa;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            max-width: 800px;
+            width: 100%;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-box {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-weight: bold;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-align: left;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #eef5ff;
+            border-color: var(--primary-color);
+        }
+
+        .option-btn.correct {
+            background-color: #d4edda;
+            border-color: var(--success-color);
+            color: #155724;
+        }
+
+        .option-btn.wrong {
+            background-color: #f8d7da;
+            border-color: var(--error-color);
+            color: #721c24;
+        }
+
+        /* 解説エリア */
+        .explanation-area {
+            display: none;
+            margin-top: 25px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .mnemonic-box {
+            margin-top: 15px;
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            color: #856404;
+            font-weight: bold;
+        }
+
+        .next-btn, .retry-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .next-btn:hover, .retry-btn:hover {
+            background-color: #357abd;
+        }
+
+        /* アニメーションオーバーレイ */
+        .overlay-feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10rem;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .overlay-correct {
+            color: var(--success-color);
+            animation: popFade 1s ease forwards;
+        }
+
+        .overlay-incorrect {
+            color: var(--error-color);
+            animation: popFade 1s ease forwards;
+        }
+
+        @keyframes popFade {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        /* 結果画面 */
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+        
+        .score-display {
+            font-size: 2rem;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="quiz-screen">
+        <h1>化学 演習クイズ</h1>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="question-box" id="question-text">
+            問題文読み込み中...
+        </div>
+        <div class="options-grid" id="options-container">
+            <!-- 選択肢がここに入ります -->
+        </div>
+
+        <div class="explanation-area" id="explanation-area">
+            <span class="explanation-title">【解説】</span>
+            <div id="explanation-text"></div>
+            <div class="mnemonic-box" id="mnemonic-text"></div>
+            <button class="next-btn" id="next-btn" onclick="nextQuestion()">次の問題へ</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h1>結果発表</h1>
+        <div class="score-display" id="score-display"></div>
+        <p id="result-message"></p>
+        <button class="retry-btn" id="retry-wrong-btn" onclick="retryWrong()" style="display:none;">間違えた問題をやり直す</button>
+        <button class="retry-btn" onclick="location.reload()" style="background-color: #6c757d; margin-top: 10px;">最初からすべてやり直す</button>
+    </div>
+</div>
+
+<div id="feedback-overlay" class="overlay-feedback"></div>
+
+<script>
+    // 問題データ
+    const problems = [
+        {
+            id: 1,
+            text: "【1枚目】鉄に関する記述として誤りを含むものはどれか。",
+            options: [
+                "① 鉄を亜鉛でめっきすると，鉄は腐食しにくくなる。",
+                "② 鉄(III)イオンを含む水溶液に，チオシアン酸カリウム水溶液を加えると，血赤色の溶液になる。",
+                "③ 鉄(III)イオンを含む水溶液に，K₃[Fe(CN)₆]の水溶液を加えると，濃青色の沈殿を生じる。",
+                "④ 鉄にクロムやニッケルを混ぜてつくった合金はステンレス鋼という。"
+            ],
+            correct: 2, // 0-based index for ③
+            explanation: "Fe³⁺ と K₃[Fe(CN)₆]（酸化数+3の錯体）の組み合わせでは、お互いに酸化数が同じなので濃青色沈殿は生じず、褐色の溶液になります。濃青色沈殿ができるのは酸化数が違うときです。",
+            mnemonic: "覚え方：「3と3は混ざらない（褐色）、2と3で青くなる」"
+        },
+        {
+            id: 2,
+            text: "【2枚目】有機化合物の反応に関する記述として誤りを含むものはどれか。",
+            options: [
+                "① 酢酸ナトリウムと水酸化ナトリウムの混合物を加熱すると，メタンが発生する。",
+                "② アセトアルデヒドは，工業的には触媒を用いてエチレンを酸素で酸化して製造している。",
+                "③ エタノールにナトリウムを加えると，ナトリウムエトキシドが得られる。",
+                "④ シクロヘキサンに水素を付加させると，シクロヘキセンが得られる。",
+                "⑤ メタノールは工業的に，一酸化炭素と水素から製造される。"
+            ],
+            correct: 3, // ④
+            explanation: "シクロヘキサン（C₆H₁₂）はすでに水素で満タン（飽和）の状態です。これ以上水素を付加することはできません。逆にシクロヘキセンに水素を付加するとシクロヘキサンになります。",
+            mnemonic: "覚え方：「満腹（飽和）のヘキサンに、水素のおかわりは無理！」"
+        },
+        {
+            id: 3,
+            text: "【3枚目】互いに同素体の関係にあるものはどれか。",
+            options: [
+                "① 金と白金",
+                "② ナトリウムとカリウム",
+                "③ 一酸化炭素と二酸化炭素",
+                "④ 黄リンと赤リン",
+                "⑤ ¹²C と ¹³C"
+            ],
+            correct: 3, // ④
+            explanation: "同素体は「同じ元素からなる単体」です。黄リンと赤リンは共にリン（P）の同素体です。①②は別元素、③は化合物、⑤は同位体です。",
+            mnemonic: "覚え方：同素体はSCOP（スコップ）。硫黄、炭素、酸素、リン。"
+        },
+        {
+            id: 4,
+            text: "【4枚目】ベンゼンに関する記述として誤りを含むものはどれか。",
+            options: [
+                "① ベンゼンの炭素間距離はすべて等しい。",
+                "② ベンゼンを空気中で燃やすと，多量のすすが生じる。",
+                "③ ベンゼン分子中のすべての原子は，同一平面上にある。",
+                "④ ベンゼンは常温・常圧で無色の液体である。",
+                "⑤ ベンゼンは水に溶けにくく，水より重い。"
+            ],
+            correct: 4, // ⑤
+            explanation: "ベンゼンは炭化水素（油の仲間）であり、水よりも密度が小さく（軽く）、水に浮きます。",
+            mnemonic: "覚え方：「ベンゼンは油の仲間、水にプカプカ浮く（軽い）」"
+        },
+        {
+            id: 5,
+            text: "【5枚目】ゴムに関する記述として誤りを含むものはどれか。",
+            options: [
+                "① 非結晶部分（無定形部分）のみからなる。",
+                "② 天然ゴム（生ゴム）を空気中に長時間放置するとゴム弾性を失う。",
+                "③ スチレンーブタジエンゴム（SBR）は，炭素間の二重結合とベンゼン環を含んでいる。",
+                "④ 天然ゴム（生ゴム）に数 ％ の硫黄を加えると，硫黄原子の架橋構造ができる。",
+                "⑤ 天然ゴム（生ゴム）のポリイソプレンに含まれる二重結合には，シス形とトランス形がほぼ同じ割合で存在する。"
+            ],
+            correct: 4, // ⑤
+            explanation: "天然ゴムは、ほぼ100%が「シス形」のポリイソプレンです。トランス形はグッタペルカという別の物質になります。",
+            mnemonic: "覚え方：「天然ゴムは、シス（Systematic）に並んで柔らかい」"
+        },
+        {
+            id: 6,
+            text: "【6枚目】金属結晶に関する記述として誤りを含むものはどれか。",
+            options: [
+                "① アルカリ金属の単体の結晶では，原子番号が大きいほど融点が低くなる。",
+                "② 六方最密構造と面心立方格子の配位数は，ともに12である。",
+                "③ 体心立方格子の構造をもつ金属結晶の密度と面心立方格子の構造をもつ金属結晶の密度を比べると，必ず面心立方格子の構造をもつ金属結晶の方が大きい。",
+                "④ 銀は，すべての金属のうちで最も電気伝導性が大きい。"
+            ],
+            correct: 2, // ③
+            explanation: "密度は格子の種類だけでなく、原子量（原子の重さ）にも依存します。たとえスカスカな構造でも原子自体が重ければ密度は高くなるため、「必ず面心の方が大きい」とは言えません。",
+            mnemonic: "覚え方：「密度は並び方だけじゃ決まらない。体重（原子量）も大事！」"
+        },
+        {
+            id: 7,
+            text: "【7枚目】貴ガスに関する記述として誤りを含むものはどれか。",
+            options: [
+                "① 他の原子とはほとんど化合物をつくらない。",
+                "② 単体の沸点は，原子量が大きい方が高い。",
+                "③ 空気中で最も多く存在するのは，ネオンである。",
+                "④ ヘリウムは，気球などに用いられる。",
+                "⑤ アルゴンは，蛍光灯に封入されている。"
+            ],
+            correct: 2, // ③
+            explanation: "空気中に最も多く存在する貴ガスは「アルゴン（Ar）」です（約1%）。ネオンではありません。",
+            mnemonic: "覚え方：「空気の中には窒素、酸素、あるごん（Ar）！」"
+        },
+        {
+            id: 8,
+            text: "【8枚目】クロム酸イオンに関する記述として誤りを含むものはどれか。",
+            options: [
+                "① クロム原子の酸化数は，+6である。",
+                "② 水溶液は，黄色である。",
+                "③ 水溶液に希硫酸を加えると，二クロム酸イオン Cr₂O₇²⁻ が生成する。",
+                "④ 強い酸化作用を示すため，酸化還元滴定に用いられる。"
+            ],
+            correct: 3, // ④
+            explanation: "酸化還元滴定で強力な酸化剤として使われるのは、赤橙色の「二クロム酸イオン（Cr₂O₇²⁻）」です。クロム酸イオンではありません。",
+            mnemonic: "覚え方：「滴定で暴れる（酸化する）のは、オレンジ色のニクロム酸」"
+        },
+        {
+            id: 9,
+            text: "【9枚目】エネルギーに関する記述として下線部に誤りを含むものはどれか。",
+            options: [
+                "① 電子親和力とは，気体状態の原子が電子1個を取り込んだ際に放出されるエネルギーである。",
+                "② 0℃において，1 mol の氷が融解する際に必要なエネルギーは，1 mol の水が凝固する際に放出されるエネルギーと等しい。",
+                "③ C－H 結合の結合エネルギーが Q (kJ/mol) であるとき，1 mol の CH₄ 分子を C 原子と H 原子に完全に分解するには， 4Q (kJ) のエネルギーが必要である。",
+                "④ 正反応が吸熱反応の場合，逆反応の活性化エネルギーは，正反応の活性化エネルギーよりも大きい。"
+            ],
+            correct: 3, // ④
+            explanation: "吸熱反応＝「ゴール（生成物）が高い位置にある」。山を越えるとき、高い位置にあるゴールから戻る（逆反応）ほうが、低いスタートから登るよりも、登る距離（活性化エネルギー）は小さくなります。",
+            mnemonic: "覚え方：「吸熱はゴールが高い。帰り道（逆反応）の山登りは楽ちん（小さい）」"
+        },
+        {
+            id: 10,
+            text: "【10枚目】α-アミノ酸およびタンパク質に関する記述として誤りを含むものはどれか。",
+            options: [
+                "① 天然に存在するタンパク質を構成する α-アミノ酸のうち，グリシンだけが不斉炭素原子をもたない。",
+                "② タンパク質に濃い水酸化ナトリウム水溶液を加えて加熱し，酢酸で中和した後に酢酸鉛(II)水溶液を加えると，黄色沈殿が生じる。",
+                "③ タンパク質水溶液に酸や塩基の水溶液を加えると，タンパク質の立体構造が変化することでタンパク質が凝固する。",
+                "④ 加水分解したとき，α-アミノ酸のみを生じるタンパク質を単純タンパク質という。"
+            ],
+            correct: 1, // ②
+            explanation: "硫黄の検出反応ですが、生成する硫化鉛（PbS）の沈殿の色は「黒色」です。黄色ではありません。",
+            mnemonic: "覚え方：「鉛（Pb）と硫黄（S）で、腹黒（PbSは黒）になる」"
+        },
+        {
+            id: 11,
+            text: "【11枚目】ハロゲンの単体の反応に関する記述として誤りを含むものはどれか。",
+            options: [
+                "① フッ素は水と激しく反応し，酸素が発生する。",
+                "② 臭素水にアセチレンを通じると，臭素水の赤褐色が脱色される。",
+                "③ 塩素は水に少し溶け，その一部が水と反応して強い酸化力をもつ物質を生じる。",
+                "④ 臭化カリウム水溶液にヨウ素を加えると，臭素の単体が遊離する。"
+            ],
+            correct: 3, // ④
+            explanation: "ハロゲンの酸化力の強さは F > Cl > Br > I です。ヨウ素（I）は臭素（Br）より弱いため、臭素を追い出すことはできません。",
+            mnemonic: "覚え方：「ヨウ素は弱虫。兄貴分の臭素には勝てない」"
+        },
+        {
+            id: 12,
+            text: "【12枚目】コロイドに関する記述として誤りを含むものはどれか。",
+            options: [
+                "① コロイド粒子が不規則に熱運動する現象を，ブラウン運動という。",
+                "② コロイド溶液の横から強い光を照射すると，光の進路が輝いて見える。",
+                "③ 親水コロイドに多量の電解質を加えるとコロイドが沈殿する現象を，塩析という。",
+                "④ 水酸化鉄(III)のコロイド粒子の表面は正の電荷を帯びているので，電気泳動により陰極側へ移動する。",
+                "⑤ 墨汁には，保護コロイドとしてニカワが加えられている。"
+            ],
+            correct: 0, // ①
+            explanation: "ブラウン運動の原因は、コロイド粒子自身の熱運動ではなく、「分散媒（水分子など）が熱運動して、コロイド粒子に不規則に衝突するから」です。定義のひっかけ問題として頻出です。",
+            mnemonic: "覚え方：「ブラウン運動は、見えない水分子のアタックのせい（コロイドは被害者）」"
+        }
+    ];
+
+    // アプリの状態管理
+    let quizQueue = []; // 出題する問題のインデックス配列
+    let currentStep = 0; // 現在何問目か
+    let score = 0;
+    let wrongAnswers = []; // 間違えた問題のIDを保存
+    let isRetryMode = false;
+
+    // 初期化
+    function initQuiz() {
+        quizQueue = problems.map((_, index) => index);
+        startSession();
+    }
+
+    function startSession() {
+        currentStep = 0;
+        score = 0;
+        // リトライモードでなければ間違えたリストをクリア（リトライ中は維持しないと結果画面でおかしくなるが、今回はシンプルに）
+        if (!isRetryMode) {
+            wrongAnswers = [];
+        }
+        
+        document.getElementById('quiz-screen').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        
+        showQuestion();
+    }
+
+    // 問題表示
+    function showQuestion() {
+        const problemIndex = quizQueue[currentStep];
+        const problem = problems[problemIndex];
+
+        // プログレスバー更新
+        const progress = ((currentStep) / quizQueue.length) * 100;
+        document.getElementById('progress-fill').style.width = `${progress}%`;
+
+        // 問題文セット
+        document.getElementById('question-text').innerText = `Q${currentStep + 1}. ${problem.text}`;
+
+        // 解説非表示
+        document.getElementById('explanation-area').style.display = 'none';
+
+        // 選択肢生成
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        problem.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, problem.correct, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    // 正誤判定
+    function checkAnswer(selectedIndex, correctIndex, btnElement) {
+        // ボタン無効化（連打防止）
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(b => b.disabled = true);
+
+        const problemIndex = quizQueue[currentStep];
+        const problem = problems[problemIndex];
+        const feedbackOverlay = document.getElementById('feedback-overlay');
+
+        if (selectedIndex === correctIndex) {
+            // 正解
+            btnElement.classList.add('correct');
+            feedbackOverlay.innerText = '〇';
+            feedbackOverlay.className = 'overlay-feedback overlay-correct';
+            // 演出のため一旦クラスをリセットして再描画させるハック
+            void feedbackOverlay.offsetWidth;
+            if (!isRetryMode) score++; // リトライモードのスコア計算は簡易化
+        } else {
+            // 不正解
+            btnElement.classList.add('wrong');
+            // 正解のボタンも教える
+            buttons[correctIndex].classList.add('correct');
+            
+            feedbackOverlay.innerText = '✕';
+            feedbackOverlay.className = 'overlay-feedback overlay-incorrect';
+            void feedbackOverlay.offsetWidth;
+
+            // 間違えたリストに追加（重複チェック）
+            if (!wrongAnswers.includes(problemIndex)) {
+                wrongAnswers.push(problemIndex);
+            }
+        }
+
+        // アニメーション再生
+        feedbackOverlay.style.animation = 'none';
+        feedbackOverlay.offsetHeight; /* trigger reflow */
+        feedbackOverlay.style.animation = null; 
+
+        // 解説表示
+        document.getElementById('explanation-text').innerText = problem.explanation;
+        document.getElementById('mnemonic-text').innerText = problem.mnemonic;
+        document.getElementById('explanation-area').style.display = 'block';
+    }
+
+    // 次の問題へ
+    function nextQuestion() {
+        currentStep++;
+        if (currentStep < quizQueue.length) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    // 結果表示
+    function showResult() {
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+
+        const resultTitle = isRetryMode ? "復習完了！" : "結果発表";
+        const total = quizQueue.length;
+        // リトライモードの場合はスコア計算の分母が変わるため、簡易表示
+        let scoreText = "";
+        if(!isRetryMode) {
+            scoreText = `${total}問中 ${score}問正解！`;
+        } else {
+            scoreText = `${total}問の復習が完了しました。`;
+        }
+        
+        document.getElementById('score-display').innerText = scoreText;
+
+        const msgElement = document.getElementById('result-message');
+        const retryBtn = document.getElementById('retry-wrong-btn');
+
+        if (wrongAnswers.length === 0) {
+            msgElement.innerText = "素晴らしい！全問正解です！";
+            msgElement.style.color = "var(--success-color)";
+            msgElement.style.fontWeight = "bold";
+            retryBtn.style.display = 'none';
+        } else {
+            msgElement.innerText = isRetryMode 
+                ? `まだ ${wrongAnswers.length} 問の弱点があります。完璧になるまで繰り返しましょう！`
+                : `${wrongAnswers.length} 問の間違いがありました。解説を読んで復習しましょう。`;
+            msgElement.style.color = "var(--text-color)";
+            retryBtn.style.display = 'inline-block';
+        }
+    }
+
+    // 間違えた問題だけやり直す
+    function retryWrong() {
+        isRetryMode = true;
+        // 間違えた問題のIDリストを新しいキューにする
+        quizQueue = [...wrongAnswers];
+        // 間違えたリストをクリア（今回のリトライセッションでの間違いを記録するため）
+        wrongAnswers = [];
+        startSession();
+    }
+
+    // 初回実行
+    initQuiz();
+
+</script>
+</body>
+</html>
