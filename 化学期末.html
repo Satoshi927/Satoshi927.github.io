@@ -21,8 +21,9 @@
             padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center; /* 垂直方向も中央に */
+            align-items: center;
             min-height: 100vh;
+            overflow-x: hidden; /* アニメーションのはみ出し防止 */
         }
 
         .container {
@@ -33,6 +34,7 @@
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             position: relative;
+            z-index: 10; /* アニメーションより手前に */
         }
 
         h1 {
@@ -42,7 +44,7 @@
             font-size: 1.8rem;
         }
 
-        /* スタート画面用 */
+        /* スタート画面 */
         .start-menu {
             display: flex;
             flex-direction: column;
@@ -71,7 +73,7 @@
             box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
         }
 
-        /* クイズ画面用 */
+        /* クイズ画面 */
         .progress-bar {
             width: 100%;
             background-color: #eee;
@@ -181,35 +183,6 @@
             background-color: #357abd;
         }
 
-        /* アニメーションオーバーレイ */
-        .overlay-feedback {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 10rem;
-            font-weight: bold;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 100;
-        }
-
-        .overlay-correct {
-            color: var(--success-color);
-            animation: popFade 1s ease forwards;
-        }
-
-        .overlay-incorrect {
-            color: var(--error-color);
-            animation: popFade 1s ease forwards;
-        }
-
-        @keyframes popFade {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-        }
-
         /* 結果画面 */
         .result-screen {
             text-align: center;
@@ -221,6 +194,91 @@
             margin: 20px 0;
             color: var(--primary-color);
         }
+
+        /* =========================================
+           ここから新しいアニメーション用CSS
+           ========================================= */
+        
+        /* 全画面を覆うコンテナ（クリック不可） */
+        .anim-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* 正解の〇 (下から飛び出す) */
+        .symbol-correct {
+            font-size: 15rem;
+            color: var(--success-color);
+            font-weight: 900;
+            text-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+            animation: shootUpBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes shootUpBounce {
+            0% {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(-20px) scale(1.1);
+                opacity: 1;
+            }
+            80% {
+                transform: translateY(10px) scale(0.95);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 0; /* 最後はフェードアウト */
+            }
+        }
+
+        /* 不正解の✕ (ズームインして揺れる) */
+        .symbol-wrong {
+            font-size: 15rem;
+            color: var(--error-color);
+            font-weight: 900;
+            text-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+            animation: zoomShake 0.8s ease forwards;
+        }
+
+        @keyframes zoomShake {
+            0% { transform: scale(3); opacity: 0; }
+            40% { transform: scale(1); opacity: 1; }
+            50% { transform: rotate(-10deg); }
+            60% { transform: rotate(10deg); }
+            70% { transform: rotate(-10deg); }
+            100% { transform: scale(1) rotate(0); opacity: 0; }
+        }
+
+        /* 紙吹雪（パーティクル） */
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: confettiFall 1.5s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -266,10 +324,8 @@
     </div>
 </div>
 
-<div id="feedback-overlay" class="overlay-feedback"></div>
-
 <script>
-    // 問題データ (表記をクリーンアップ済み)
+    // 問題データ
     const problems = [
         {
             id: 1,
@@ -346,7 +402,7 @@
             options: [
                 "① アルカリ金属の単体の結晶では，原子番号が大きいほど融点が低くなる。",
                 "② 六方最密構造と面心立方格子の配位数は，ともに12である。",
-                "③ 体心立方格子の構造をもつ金属結晶の密度と面心立方格子の構造をもつ金属結晶の密度を比べると，必ず面心立方格子の構造をもつ金属結晶の方が大きい。",
+                "③ 体心立方格子の構造をもつ金属結晶の密度と面心立方格子の構造をもつ金属結晶の密度を比べると，必ず面心立方格子の構造をもつ金属結晶の方が大きい。",
                 "④ 銀は，すべての金属のうちで最も電気伝導性が大きい。"
             ],
             correct: 2, 
@@ -435,14 +491,12 @@
         }
     ];
 
-    // アプリの状態変数
-    let quizQueue = []; // 出題する問題のインデックス配列
-    let currentStep = 0; // 現在何問目か
+    let quizQueue = [];
+    let currentStep = 0;
     let score = 0;
-    let wrongAnswers = []; // 間違えた問題のIDを保存
+    let wrongAnswers = [];
     let isRetryMode = false;
 
-    // シャッフル関数
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -451,56 +505,37 @@
         return array;
     }
 
-    // クイズ開始
     function startQuiz(mode) {
-        // 全問題のインデックス配列を作成 [0, 1, 2, ... 11]
         let indices = problems.map((_, index) => index);
-
         if (mode === 'shuffle') {
             indices = shuffleArray(indices);
         }
-
         quizQueue = indices;
-        
-        // 画面切り替え
         document.getElementById('start-screen').style.display = 'none';
         startSession();
     }
 
-    // セッション初期化（リトライ時もここから）
     function startSession() {
         currentStep = 0;
         score = 0;
-        // リトライモードでなければ間違えたリストをクリア
         if (!isRetryMode) {
             wrongAnswers = [];
         }
-        
         document.getElementById('quiz-screen').style.display = 'block';
         document.getElementById('result-screen').style.display = 'none';
-        
         showQuestion();
     }
 
-    // 問題表示
     function showQuestion() {
         const problemIndex = quizQueue[currentStep];
         const problem = problems[problemIndex];
 
-        // 問題数ヘッダー更新
         document.getElementById('quiz-header').innerText = `問題 ${currentStep + 1} / ${quizQueue.length}`;
-
-        // プログレスバー更新
         const progress = ((currentStep) / quizQueue.length) * 100;
         document.getElementById('progress-fill').style.width = `${progress}%`;
-
-        // 問題文セット
         document.getElementById('question-text').innerText = problem.text;
-
-        // 解説非表示
         document.getElementById('explanation-area').style.display = 'none';
 
-        // 選択肢生成
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = '';
 
@@ -513,48 +548,80 @@
         });
     }
 
-    // 正誤判定
+    /* =========================================
+       新しいアニメーション関数
+       ========================================= */
+    function showFeedback(isCorrect) {
+        // コンテナを作成
+        const container = document.createElement('div');
+        container.className = 'anim-container';
+        document.body.appendChild(container);
+
+        // シンボル（〇 or ✕）を作成
+        const symbol = document.createElement('div');
+        symbol.innerText = isCorrect ? '〇' : '✕';
+        symbol.className = isCorrect ? 'symbol-correct' : 'symbol-wrong';
+        container.appendChild(symbol);
+
+        // 正解なら紙吹雪を生成
+        if (isCorrect) {
+            const colors = ['#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#2ecc71'];
+            for (let i = 0; i < 40; i++) { // パーティクルの数
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // ランダムな位置から少しずらす
+                const startX = (Math.random() - 0.5) * 50;
+                
+                // 飛び散る方向 (CSS変数で渡す)
+                const moveX = (Math.random() - 0.5) * 600; // 横方向の広がり
+                const moveY = (Math.random() - 1.0) * 600; // 上方向への広がり
+                
+                confetti.style.left = `calc(50% + ${startX}px)`;
+                confetti.style.top = `60%`;
+                confetti.style.setProperty('--tx', `${moveX}px`);
+                confetti.style.setProperty('--ty', `${moveY}px`);
+                
+                // サイズや速度のランダム化
+                confetti.style.animationDuration = (0.8 + Math.random() * 0.7) + 's';
+                
+                container.appendChild(confetti);
+            }
+        }
+
+        // アニメーション終了後にDOMを削除（メモリリーク防止）
+        setTimeout(() => {
+            document.body.removeChild(container);
+        }, 1500);
+    }
+
     function checkAnswer(selectedIndex, correctIndex, btnElement) {
-        // ボタン無効化（連打防止）
         const buttons = document.querySelectorAll('.option-btn');
         buttons.forEach(b => b.disabled = true);
 
         const problemIndex = quizQueue[currentStep];
         const problem = problems[problemIndex];
-        const feedbackOverlay = document.getElementById('feedback-overlay');
 
         if (selectedIndex === correctIndex) {
-            // 正解
             btnElement.classList.add('correct');
-            feedbackOverlay.innerText = '〇';
-            feedbackOverlay.className = 'overlay-feedback overlay-correct';
-            // 演出リセットハック
-            void feedbackOverlay.offsetWidth;
+            showFeedback(true); // ★正解アニメーション呼び出し
             if (!isRetryMode) score++; 
         } else {
-            // 不正解
             btnElement.classList.add('wrong');
-            buttons[correctIndex].classList.add('correct'); // 正解を教える
+            buttons[correctIndex].classList.add('correct');
+            showFeedback(false); // ★不正解アニメーション呼び出し
             
-            feedbackOverlay.innerText = '✕';
-            feedbackOverlay.className = 'overlay-feedback overlay-incorrect';
-            void feedbackOverlay.offsetWidth;
-
-            // 間違えたリストに追加（重複チェック）
             if (!wrongAnswers.includes(problemIndex)) {
                 wrongAnswers.push(problemIndex);
             }
         }
 
-        // アニメーション適用（CSSアニメーションはクラス付与で自動再生）
-
-        // 解説表示
         document.getElementById('explanation-text').innerText = problem.explanation;
         document.getElementById('mnemonic-text').innerText = problem.mnemonic;
         document.getElementById('explanation-area').style.display = 'block';
     }
 
-    // 次の問題へ
     function nextQuestion() {
         currentStep++;
         if (currentStep < quizQueue.length) {
@@ -564,7 +631,6 @@
         }
     }
 
-    // 結果表示
     function showResult() {
         document.getElementById('quiz-screen').style.display = 'none';
         document.getElementById('result-screen').style.display = 'block';
@@ -601,16 +667,12 @@
         }
     }
 
-    // 間違えた問題だけやり直す
     function retryWrong() {
         isRetryMode = true;
-        // 間違えた問題のIDリストを新しいキューにする
         quizQueue = [...wrongAnswers];
-        // 間違えたリストをクリア（今回のリトライセッションでの間違いを記録するため）
         wrongAnswers = [];
         startSession();
     }
-
 </script>
 </body>
 </html>
